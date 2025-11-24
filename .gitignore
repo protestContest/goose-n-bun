@@ -1,0 +1,5 @@
+build/
+dist/
+*.sublime-workspace
+.DS_Store
+gbafix/gbafix
