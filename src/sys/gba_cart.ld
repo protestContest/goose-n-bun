@@ -33,7 +33,6 @@ SECTIONS
   {
     *(.text)
     *(.text*)
-    *(.gnu.linkonce.t.*)
     *(.glue_7)
     *(.glue_7t)
     KEEP(*(.init))
@@ -44,38 +43,17 @@ SECTIONS
   {
     *(.rodata)
     *(.rodata*)
-    *(.gnu.linkonce.r.*)
   } > ROM
 
-  .preinit_array : ALIGN(4)
+  .res (READONLY) : ALIGN(4)
   {
-    __preinit_array_start = .;
-    KEEP(*(.preinit_array*))
-    __preinit_array_end = .;
+    KEEP (*(.res))
   } > ROM
-
-  .init_array : ALIGN(4)
-  {
-    __init_array_start = .;
-    KEEP(*(SORT(.init_array.*)))
-    KEEP(*(.init_array*))
-    __init_array_end = .;
-  } > ROM
-
-  .fini_array : ALIGN(4)
-  {
-    __fini_array_start = .;
-    KEEP(*(SORT(.fini_array.*)))
-    KEEP(*(.fini_array*))
-    __fini_array_end = .;
-  } > ROM
-
 
   .bss (NOLOAD) : ALIGN(4)
   {
       *(.bss)
       *(.bss*)
-      *(.gnu.linkonce.b.*)
       *(COMMON)
       . = ALIGN(4);
   } > IWRAM
@@ -89,7 +67,6 @@ SECTIONS
     __DATA_START__ = .;
     *(.data)
     *(.data*)
-    *(.gnu.linkonce.d.*)
     . = ALIGN(4);
     __DATA_END__ = .;
   } > IWRAM AT> ROM

@@ -1,30 +1,37 @@
-#define SCREEN_W 240
-#define SCREEN_H 160
-
-#define REG_DISPCNT             *((volatile uint16_t *)0x04000000)
-
-
-#define DISPCNT_BG_MODE_MASK    (0x7)
-#define DISPCNT_BG_MODE(n)      ((n) & DISPCNT_BG_MODE_MASK) // 0 to 5
-
-#define DISPCNT_BG2_ENABLE      (1 << 10)
-
-#define MEM_VRAM_MODE3_FB       ((uint16_t *)0x06000000)
-
-static inline uint16_t RGB15(uint16_t r, uint16_t g, uint16_t b)
-{
-    return (r & 0x1F) | ((g & 0x1F) << 5) | ((b & 0x1F) << 10);
-}
+#include "canvas.h"
+#include "text.h"
+#include "str.h"
 
 int main(void)
 {
-    REG_DISPCNT = DISPCNT_BG_MODE(3) | DISPCNT_BG2_ENABLE;
+  FontInfo font;
 
-    MEM_VRAM_MODE3_FB[120 + 80 * SCREEN_W] = RGB15(31, 0, 0);
-    MEM_VRAM_MODE3_FB[136 + 80 * SCREEN_W] = RGB15(0, 31, 0);
-    MEM_VRAM_MODE3_FB[120 + 96 * SCREEN_W] = RGB15(0, 0, 31);
+  GraphicsMode(3);
+  ShowLayer(DISP_BG2);
+  SetColor(WHITE);
 
-    while(1);
+  SetFont("Geneva-9");
+  GetFontInfo(&font);
 
-    return 0;
+  char *lines[] = {
+    "Sphinx of black quartz, judge my vow",
+    "",
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "abcdefghijklmnopqrstuvwxyz",
+    "1234567890&@.,?!'\"()",
+    "",
+    "Jackdaws love my big sphinx of quartz",
+  };
+
+  u32 height = ArrayCount(lines)*font.lineHeight;
+  u32 start = SCREEN_H/2 - height/2 + font.ascent;
+  for (u32 i = 0; i < ArrayCount(lines); i++) {
+    u32 width = StringWidth(lines[i]);
+    MoveTo(SCREEN_W/2 - width/2, start + i*font.lineHeight);
+    Print(lines[i]);
+  }
+
+  while (1);
+
+  return 0;
 }
