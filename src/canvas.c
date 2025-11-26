@@ -1,8 +1,15 @@
 #include "canvas.h"
+#include "bios.h"
 
 static Pen pen = {0};
 
 Rect screenRect = {0, 0, SCREEN_W, SCREEN_H};
+
+void ClearScreen(u16 color)
+{
+  u16 src[2] = {color, color};
+  BlockFill((u32*)src, (u32*)VRAM, VRAM_WORDS);
+}
 
 void GetPen(Pen *p)
 {
@@ -96,7 +103,5 @@ void RoundRect(Rect *rect)
 
 void WritePixel(i16 x, i16 y, u16 color)
 {
-  // if (x >= 0 && x < SCREEN_W && y >= 0 && y < SCREEN_H) {
-    PixelAt(x, y) = color;
-  // }
+  PixelAt(x, y) = color;
 }

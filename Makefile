@@ -24,13 +24,13 @@ RMAKE := tools/rmake/rmake
 
 SRC_S := $(wildcard $(SRC_DIR)/*.s $(SRC_DIR)/**/*.s)
 SRC_C := $(wildcard $(SRC_DIR)/*.c $(SRC_DIR)/**/*.c)
-RES_R := $(wildcard $(RES_DIR)/* $(RES_DIR)/**/*)
+RES_R := $(wildcard $(RES_DIR)/*)
 
 DEFINES += -D__GBA__
 ARCH := -mcpu=arm7tdmi -mtune=arm7tdmi
 
 IFLAGS := -I$(INCLUDES) -include prefix.h
-WFLAGS := -Wall -Wextra -Werror -Wno-multichar -Wno-unused-parameter
+WFLAGS := -Wall -Wextra -Werror -Wno-multichar -Wno-unused-parameter -Wno-main
 
 ASFLAGS += -x assembler-with-cpp $(DEFINES) $(ARCH) -mthumb -mthumb-interwork -ffunction-sections -fdata-sections
 CFLAGS += -std=c99 $(WFLAGS) $(DEFINES) $(ARCH) -mthumb -mthumb-interwork $(IFLAGS) -O3 -ffunction-sections -fdata-sections

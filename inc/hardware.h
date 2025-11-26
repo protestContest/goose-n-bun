@@ -33,8 +33,14 @@
 #define HideLayer(n) do {\
   REG_DISPCNT &= ~(n);\
 } while (0)
+#define ScreenOff() do {\
+  REG_DISPCNT &= ~(0xFF00);\
+} while (0)
 
-#define REG_DISPSTAT    *((volatile u16*)0x04000002)
+#define REG_DISPSTAT    *((volatile u16*)0x04000004)
+#define LCD_VBLANK_IRQ  (1 << 3)
+#define LCD_HBLANK_IRQ  (1 << 4)
+#define LCD_VCOUNT_IRQ  (1 << 5)
 #define REG_VCOUNT      *((volatile u16*)0x04000006)
 #define REG_BG0CNT      *((volatile u16*)0x04000008)
 #define REG_BG1CNT      *((volatile u16*)0x0400000A)
@@ -52,14 +58,14 @@
 #define REG_BG2PB       *((volatile u16*)0x04000022)
 #define REG_BG2PC       *((volatile u16*)0x04000024)
 #define REG_BG2PD       *((volatile u16*)0x04000026)
-#define REG_BG2X        *((volatile u16*)0x04000028)
-#define REG_BG2Y        *((volatile u16*)0x0400002C)
+#define REG_BG2X        *((volatile u32*)0x04000028)
+#define REG_BG2Y        *((volatile u32*)0x0400002C)
 #define REG_BG3PA       *((volatile u16*)0x04000030)
 #define REG_BG3PB       *((volatile u16*)0x04000032)
 #define REG_BG3PC       *((volatile u16*)0x04000034)
 #define REG_BG3PD       *((volatile u16*)0x04000036)
-#define REG_BG3X        *((volatile u16*)0x04000038)
-#define REG_BG3Y        *((volatile u16*)0x0400003C)
+#define REG_BG3X        *((volatile u32*)0x04000038)
+#define REG_BG3Y        *((volatile u32*)0x0400003C)
 #define REG_WIN0H       *((volatile u16*)0x04000040)
 #define REG_WIN1H       *((volatile u16*)0x04000042)
 #define REG_WIN0V       *((volatile u16*)0x04000044)
@@ -73,6 +79,8 @@
 
 // Mode 3
 #define VRAM            ((u16*)0x06000000)
+#define VRAM_END        ((u16*)0x06018000)
+#define VRAM_WORDS      19200
 
 
 
@@ -118,14 +126,24 @@
 
 
 // Timers
-#define REG_TM0CNT_L    *((volatile u16*)0x4000100)
-#define REG_TM0CNT_H    *((volatile u16*)0x4000102)
-#define REG_TM1CNT_L    *((volatile u16*)0x4000104)
-#define REG_TM1CNT_H    *((volatile u16*)0x4000106)
-#define REG_TM2CNT_L    *((volatile u16*)0x4000108)
-#define REG_TM2CNT_H    *((volatile u16*)0x400010A)
-#define REG_TM3CNT_L    *((volatile u16*)0x400010C)
-#define REG_TM3CNT_H    *((volatile u16*)0x400010E)
+#define REG_TM0CNT      *((volatile u32*)0x04000100)
+#define REG_TM0CNT_L    *((volatile u16*)0x04000100)
+#define REG_TM0CNT_H    *((volatile u16*)0x04000102)
+#define REG_TM1CNT      *((volatile u32*)0x04000104)
+#define REG_TM1CNT_L    *((volatile u16*)0x04000104)
+#define REG_TM1CNT_H    *((volatile u16*)0x04000106)
+#define REG_TM2CNT      *((volatile u32*)0x04000108)
+#define REG_TM2CNT_L    *((volatile u16*)0x04000108)
+#define REG_TM2CNT_H    *((volatile u16*)0x0400010A)
+#define REG_TM3CNT      *((volatile u32*)0x0400010C)
+#define REG_TM3CNT_L    *((volatile u16*)0x0400010C)
+#define REG_TM3CNT_H    *((volatile u16*)0x0400010E)
+
+#define SetTimeout(ms, fn)  do {\
+  OnInterrupt(INT_TIMER3, fn);\
+  REG_TM3CNT_L = (ms);\
+  REG_TM3CNT_H = 0xC3;\
+} while (0)
 
 
 
@@ -157,10 +175,23 @@
 
 
 
-// Interrupt, Waitstate, Power-Down
+// Interrupts
+#define REG_IME         *((volatile u16*)0x04000208)
 #define REG_IE          *((volatile u16*)0x04000200)
 #define REG_IF          *((volatile u16*)0x04000202)
-#define REG_WAITCNT     *((volatile u16*)0x04000204)
-#define REG_IME         *((volatile u16*)0x04000208)
-#define REG_POSTFLG     *((volatile u16*)0x04000300)
-#define REG_HALTCNT     *((volatile u16*)0x04000301)
+#define REG_BIOSIF      *((volatile u16*)0x03007FF8)
+#define ISR             *(void* volatile*)0x03007FFC
+#define INT_VBLANK      (1 << 0)
+#define INT_HBLANK      (1 << 1)
+#define INT_VCOUNT      (1 << 2)
+#define INT_TIMER0      (1 << 3)
+#define INT_TIMER1      (1 << 4)
+#define INT_TIMER2      (1 << 5)
+#define INT_TIMER3      (1 << 6)
+#define INT_SERIAL      (1 << 7)
+#define INT_DMA0        (1 << 8)
+#define INT_DMA1        (1 << 9)
+#define INT_DMA2        (1 << 10)
+#define INT_DMA3        (1 << 11)
+#define INT_KEYPAD      (1 << 12)
+#define INT_GAMEPAK     (1 << 13)

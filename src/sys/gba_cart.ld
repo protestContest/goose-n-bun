@@ -67,7 +67,7 @@ SECTIONS
     __DATA_START__ = .;
     *(.data)
     *(.data*)
-    . = ALIGN(4);
+    . = ALIGN(32);
     __DATA_END__ = .;
   } > IWRAM AT> ROM
 
@@ -81,7 +81,7 @@ SECTIONS
     *(.iwram*)
     *iwram.*(.text*)
     *iwram.*(.data*)
-    . = ALIGN(4);
+    . = ALIGN(32);
     __IWRAM_END__ = .;
   } > IWRAM AT> ROM
 
@@ -106,7 +106,7 @@ SECTIONS
     *(.ewram*)
     *ewram.*(.text*)
     *ewram.*(.data*)
-    . = ALIGN(4);
+    . = ALIGN(32);
     __EWRAM_END__ = .;
   } > EWRAM AT > ROM
 

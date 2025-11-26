@@ -1,7 +1,8 @@
 #include "canvas.h"
 #include "text.h"
 #include "str.h"
-#include "debug.h"
+#include "input.h"
+#include "interrupt.h"
 
 void TestScreen(void)
 {
@@ -38,16 +39,28 @@ void TestScreen(void)
   }
 }
 
-int main(void)
+volatile bool foo = false;
+
+void Foo(void)
+{
+  if (foo) {
+    ClearScreen(BLUE);
+  } else {
+    ClearScreen(RED);
+  }
+  foo = !foo;
+}
+
+void main(void)
 {
   GraphicsMode(3);
   ShowLayer(DISP_BG2);
 
   TestScreen();
+  OnKeyDown(BTN_A, Foo);
 
-
-
-  while (1);
-
-  return 0;
+  while (true) {
+    VSync();
+    GetInput();
+  }
 }

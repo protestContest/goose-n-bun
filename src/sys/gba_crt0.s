@@ -37,9 +37,9 @@ header_end:
 start_vector:
 
     // Disable interrupts
-    mov     r0, #0x4000000
+    mov     r0, #0x04000000
     mov     r1, #0
-    str     r1, [r0, #0x208] // IME
+    str     r1, [r0, #0x0208] // IME
 
     // Setup IRQ mode stack
     mov     r0, #0x12
@@ -58,84 +58,92 @@ start_vector:
     .thumb
 
     // Clear IWRAM
-    ldr     r0, =#0x3000000
-    ldr     r1, =#(32 * 1024)
-    bl      mem_zero
+    mov     r0, #0
+    ldr     r1, =#0x03000000
+    ldr     r2, =#(32 * 1024 / 4)
+    bl      BlockFill
 
     // Copy data section from ROM to RAM
     ldr     r0, =__DATA_LMA__
     ldr     r1, =__DATA_START__
     ldr     r2, =__DATA_SIZE__
-    bl      mem_copy
+    lsr     r2,#2
+    bl      BlockCopy
 
     // Copy IWRAM data from ROM to RAM
     ldr     r0, =__IWRAM_LMA__
     ldr     r1, =__IWRAM_START__
     ldr     r2, =__IWRAM_SIZE__
-    bl      mem_copy
+    lsr     r2,#2
+    bl      BlockCopy
 
     // Clear EWRAM
-    ldr     r0, =#0x2000000
-    ldr     r1, =#(256 * 1024)
-    bl      mem_zero
+    mov     r0, #0
+    ldr     r1, =#0x02000000
+    ldr     r2, =#(256 * 1024 / 4)
+    bl      BlockFill
 
     // Copy EWRAM data from ROM to RAM
     ldr     r0, =__EWRAM_LMA__
     ldr     r1, =__EWRAM_START__
     ldr     r2, =__EWRAM_SIZE__
-    bl      mem_copy
-
-    // Global constructors
-    ldr     r2, =__libc_init_array
-    bl      blx_r2_trampoline
+    lsr     r2,#2
+    bl      BlockCopy
 
     // Call main()
     mov     r0, #0 // int argc
     mov     r1, #0 // char *argv[]
     ldr     r2, =main
-    bl      blx_r2_trampoline
-
-    // Global destructors
-    ldr     r2, =__libc_fini_array
-    bl      blx_r2_trampoline
-
+    bl      go
+go:
+    bx      r2
     // If main() returns, reboot the GBA using SoftReset
+
+    .global Reset
+Reset:
     swi     #0x00
 
-// r0 = Base address
-// r1 = Size
-mem_zero:
-    and     r1, r1
-    beq     2f // Return if size is 0
-
-    mov     r2, #0
-1:
-    stmia   r0!, {r2}
-    sub     r1, #4
-    bne     1b
-
-2:
+    .global BlockFill
+    .global BlockCopy
+// r0: src
+// r1: dst
+// r2: numWords
+BlockFill:
+    ldr     r3,=#(1 << 24)
+    orr     r2,r3
+BlockCopy:
+    swi     #0x0C
     bx      lr
 
-// r0 = Source address
-// r1 = Destination address
-// r2 = Size
-mem_copy:
-    and     r2, r2
-    beq     2f // Return if size is 0
-
-1:
-    ldmia   r0!, {r3}
-    stmia   r1!, {r3}
-    sub     r2, #4
-    bne     1b
-
-2:
+    .global Halt
+Halt:
+    swi     #0x02
     bx      lr
 
-// r2 = Address to jump to
-blx_r2_trampoline:
-    bx      r2
+    .global Stop
+Stop:
+    swi     #0x03
+    bx      lr
+
+    .global VBlankIntrWait
+VBlankIntrWait:
+    swi     #0x05
+    bx      lr
+
+    .global __aeabi_idiv
+    .global __aeabi_uidiv
+    .global __aeabi_idivmod
+    .global __aeabi_uidivmod
+// set C division and modulo operators to call BIOS
+__aeabi_idiv:
+__aeabi_idivmod:
+    swi     #0x06
+    bx      lr
+__aeabi_uidiv:
+__aeabi_uidivmod:
+    swi     #0x06
+    mov     r0,r3
+    bx      lr
 
     .align
     .pool
