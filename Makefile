@@ -99,4 +99,5 @@ clean:
 	@make -C tools/rmake clean
 
 run: $(ROM)
-	open $(ROM)
+	@echo "  RUN     $<"
+	@open $(ROM)

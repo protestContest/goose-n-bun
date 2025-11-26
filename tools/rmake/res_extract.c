@@ -120,42 +120,170 @@ void FixFont(FontRec *rec)
   }
 }
 
-int main(int argc, char *argv[])
+typedef struct {
+  u32 entryID;
+  u32 offset;
+  u32 length;
+} AppleDoubleEntry;
+
+typedef struct __attribute__((packed)) {
+  u32 tag;
+  u32 version;
+  u8 filler[16];
+  u16 numEntries;
+  AppleDoubleEntry entries[];
+} AppleDouble;
+
+#define AppleDoubleTag "\x00\x05\x16\x07"
+ResFile *OpenFile(char *path)
 {
-  if (argc < 4) {
-    fprintf(stderr, "Usage: res-extract <resFile> <type> <resID>\n");
-    return 1;
-  }
-
-  char *resPath = argv[1];
-  u32 type = (argv[2][0] << 24) | (argv[2][1] << 16) | (argv[2][2] << 8) | argv[2][3];
-  u16 resID = 0;
-
-  char *idStr = argv[3];
-  while (*idStr && IsDigit(*idStr)) {
-    u16 digit = (*idStr) - '0';
-    resID = resID*10 + digit;
-    idStr++;
-  }
-
-  FILE *f = fopen(resPath, "r+b");
+  FILE *f = fopen(path, "r+b");
   if (!f) {
-    fprintf(stderr, "File not found\n");
-    return 2;
+    fprintf(stderr, "File \"%s\" not found\n", path);
+    exit(2);
   }
 
   fseek(f, 0, SEEK_END);
   u32 size = ftell(f);
+
+  char tag[4];
   fseek(f, 0, SEEK_SET);
+  fread(tag, 4, 1, f);
+  if (strncmp(tag, AppleDoubleTag, 4) == 0) {
+    AppleDouble *doubleFile = malloc(size);
+    fseek(f, 0, SEEK_SET);
+    fread(doubleFile, size, 1, f);
+    fclose(f);
 
-  ResFile *resFile = malloc(size);
-  fread(resFile, size, 1, f);
-  fclose(f);
+    for (u16 i = 0; i < SwapShort(doubleFile->numEntries); i++) {
+      if (SwapLong(doubleFile->entries[i].entryID) == 2) {
+        ResFile *resFile = (ResFile*)(((u8*)doubleFile) + SwapLong(doubleFile->entries[i].offset));
+        return resFile;
+      }
+    }
+    fprintf(stderr, "AppleDouble does not contain a resource fork\n");
+    exit(3);
+  } else {
+    ResFile *resFile = malloc(size);
+    fseek(f, 0, SEEK_SET);
+    fread(resFile, size, 1, f);
+    fclose(f);
+    return resFile;
+  }
+}
 
+u32 ParseType(char *str)
+{
+  if (strlen(str) != 4) {
+    fprintf(stderr, "Invalid type \"%s\"", str);
+    exit(2);
+  }
+  return (str[0] << 24) | (str[1] << 16) | (str[2] << 8) | str[3];
+}
+
+u32 ParseID(char *str)
+{
+  u16 resID = 0;
+  while (*str && IsDigit(*str)) {
+    u16 digit = (*str) - '0';
+    resID = resID*10 + digit;
+    str++;
+  }
+  return resID;
+}
+
+void PrintResourceInfo(ResRef *ref, char *type, u8 *resData, char *nameList)
+{
+  u32 dataOffset = SwapLong(ref->dataOffset) & 0xFFFFFF;
+  u32 *data = (u32*)(resData + dataOffset);
+  u32 length = SwapLong(data[0]);
+  i16 nameOffset = SwapShort(ref->nameOffset);
+  char nameStr[256] = {0};
+  nameStr[0] = '-';
+
+  if (nameOffset >= 0) {
+    char *name = nameList + nameOffset;
+    memcpy(nameStr, name+1, name[0]);
+  }
+
+  printf("%s %d \"%s\" (%d bytes)\n", type, SwapShort(ref->resID), nameStr, length);
+}
+
+void ListAllResources(ResFile *resFile)
+{
+  u8 *resData = ((u8*)resFile) + SwapLong(resFile->dataOffset);
+  ResMap *resMap = (ResMap*)(((u8*)resFile) + SwapLong(resFile->mapOffset));
+  u16 typeListOffset = SwapShort(resMap->typeListOffset);
+  u16 nameListOffset = SwapShort(resMap->nameListOffset);
+  char *nameList = ((char*)resMap) + nameListOffset;
+
+  ResTypeList *typeList = (ResTypeList*)(((u8*)resMap) + typeListOffset);
+
+  u16 numTypes = SwapShort(typeList->numTypes) + 1;
+
+  for (u16 i = 0; i < numTypes; i++) {
+    u32 type = SwapLong(typeList->items[i].type);
+    char typeStr[5] = {0};
+    typeStr[0] = type >> 24;
+    typeStr[1] = (type >> 16) & 0xFF;
+    typeStr[2] = (type >> 8) & 0xFF;
+    typeStr[3] = type & 0xFF;
+
+    u16 refListOffset = SwapShort(typeList->items[i].refListOffset);
+
+    ResRef *refs = (ResRef*)(((u8*)typeList) + refListOffset);
+    u16 numResources = SwapShort(typeList->items[i].numResources) + 1;
+
+    for (u16 j = 0; j < numResources; j++) {
+      PrintResourceInfo(&refs[j], typeStr, resData, nameList);
+    }
+  }
+}
+
+void ListResourcesOfType(ResFile *resFile, u32 type)
+{
+  u8 *resData = ((u8*)resFile) + SwapLong(resFile->dataOffset);
+  ResMap *resMap = (ResMap*)(((u8*)resFile) + SwapLong(resFile->mapOffset));
+  u16 typeListOffset = SwapShort(resMap->typeListOffset);
+  u16 nameListOffset = SwapShort(resMap->nameListOffset);
+  char *nameList = ((char*)resMap) + nameListOffset;
+
+  char typeStr[5] = {0};
+  typeStr[0] = type >> 24;
+  typeStr[1] = (type >> 16) & 0xFF;
+  typeStr[2] = (type >> 8) & 0xFF;
+  typeStr[3] = type & 0xFF;
+
+  ResTypeList *typeList = (ResTypeList*)(((u8*)resMap) + typeListOffset);
+
+  u16 numTypes = SwapShort(typeList->numTypes) + 1;
+
+  for (u16 i = 0; i < numTypes; i++) {
+    if (SwapLong(typeList->items[i].type) == type) {
+      u16 refListOffset = SwapShort(typeList->items[i].refListOffset);
+
+      ResRef *refs = (ResRef*)(((u8*)typeList) + refListOffset);
+      u16 numResources = SwapShort(typeList->items[i].numResources) + 1;
+
+      for (u16 j = 0; j < numResources; j++) {
+        PrintResourceInfo(&refs[j], typeStr, resData, nameList);
+      }
+
+      return;
+    }
+  }
+
+  fprintf(stderr, "No resources of type %s found\n", typeStr);
+}
+
+void DumpResource(ResFile *resFile, u32 type, u32 resID)
+{
   u8 *resource = GetResource(type, resID, resFile);
   if (!resource) {
-    fprintf(stderr, "Resource %s %d not found\n", argv[2], resID);
-    return 3;
+    char typeStr[5] = {0};
+    memcpy(&type, typeStr, 4);
+    fprintf(stderr, "Resource %s %d not found\n", typeStr, resID);
+    exit(3);
   }
   u32 resSize = SwapLong(*((u32*)resource));
   u8 *data = resource + sizeof(resSize);
@@ -165,6 +293,20 @@ int main(int argc, char *argv[])
   }
 
   fwrite(data, resSize, 1, stdout);
+}
+
+int main(int argc, char *argv[])
+{
+  if (argc == 2) {
+    ListAllResources(OpenFile(argv[1]));
+  } else if (argc == 3) {
+    ListResourcesOfType(OpenFile(argv[1]), ParseType(argv[2]));
+  } else if (argc == 4) {
+    DumpResource(OpenFile(argv[1]), ParseType(argv[2]), ParseID(argv[3]));
+  } else {
+    fprintf(stderr, "Usage: res-extract <resFile> [<type>] [<resID>]\n");
+    return 1;
+  }
 
   return 0;
 }

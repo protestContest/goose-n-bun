@@ -1,26 +1,32 @@
 #include "canvas.h"
 #include "text.h"
 #include "str.h"
+#include "debug.h"
 
-int main(void)
+void TestScreen(void)
 {
   FontInfo font;
-
-  GraphicsMode(3);
-  ShowLayer(DISP_BG2);
   SetColor(WHITE);
-
-  SetFont("Geneva-9");
+  char *fontName = "Geneva";
+  SetFont(fontName);
   GetFontInfo(&font);
 
+  char infoLine[37] = {0};
+  Copy("Ascent: ^  Descent: ^  Leading: ^", infoLine, 33);
+  FormatInt(infoLine, font.ascent, 36);
+  FormatInt(infoLine, font.descent, 36);
+  FormatInt(infoLine, font.leading, 36);
+
   char *lines[] = {
-    "Sphinx of black quartz, judge my vow",
+    fontName,
+    "",
+    "Jackdaws love my big sphinx of quartz",
     "",
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     "abcdefghijklmnopqrstuvwxyz",
     "1234567890&@.,?!'\"()",
     "",
-    "Jackdaws love my big sphinx of quartz",
+    infoLine
   };
 
   u32 height = ArrayCount(lines)*font.lineHeight;
@@ -30,6 +36,16 @@ int main(void)
     MoveTo(SCREEN_W/2 - width/2, start + i*font.lineHeight);
     Print(lines[i]);
   }
+}
+
+int main(void)
+{
+  GraphicsMode(3);
+  ShowLayer(DISP_BG2);
+
+  TestScreen();
+
+
 
   while (1);
 

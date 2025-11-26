@@ -30,7 +30,9 @@ int main(int argc, char *argv[])
     u32 size = ftell(f);
     fclose(f);
 
-    if (size > 0) {
+    if (size == 0) {
+      fprintf(stderr, "Skipping empty resource \"%s\"\n", path);
+    } else {
       dataSize += size;
       numResources++;
     }
