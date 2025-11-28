@@ -2,7 +2,7 @@ build/
 dist/
 *.sublime-workspace
 .DS_Store
-tools/gbafix/gbafix
+tools/romfix/romfix
 tools/rmake/rmake
 tools/rmake/res-extract
 *.rsrc

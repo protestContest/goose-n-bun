@@ -1,6 +1,6 @@
 NAME := bisquik
-GAME_TITLE := "BISQUIK"
-GAME_CODE := "ZBKE"
+GAME_TITLE := BISQUIK
+GAME_CODE := ZACK
 
 DEFINES :=
 INCLUDES := inc
@@ -19,7 +19,7 @@ ELF := $(BUILD_DIR)/$(NAME).elf
 DUMP := $(BUILD_DIR)/$(NAME).dump
 ROM := $(DIST_DIR)/$(NAME).gba
 MAP := $(BUILD_DIR)/$(NAME).map
-GBAFIX := tools/gbafix/gbafix
+ROMFIX := tools/romfix/romfix
 RMAKE := tools/rmake/rmake
 
 SRC_S := $(wildcard $(SRC_DIR)/*.s $(SRC_DIR)/**/*.s)
@@ -68,8 +68,8 @@ $(BUILD_DIR)/Resources.o: $(BUILD_DIR)/Resources
 	@$(OBJCOPY) -I binary -O elf32-littlearm --rename-section .data=.res $< $@
 	@$(OBJCOPY) --redefine-sym _binary_$(BUILD_DIR)_Resources_start=__Resources__ $@ $@
 
-$(GBAFIX): tools/gbafix/gbafix.c
-	@make -C tools/gbafix
+$(ROMFIX): tools/romfix/romfix.c
+	@make -C tools/romfix
 
 $(RMAKE): tools/rmake/rmake.c
 	@make -C tools/rmake rmake
@@ -79,12 +79,12 @@ $(ELF): $(OBJS)
 	@mkdir -p $(@D)
 	@$(CC) -o $@ $(OBJS) $(LDFLAGS)
 
-$(ROM): $(ELF) $(GBAFIX)
+$(ROM): $(ELF) $(ROMFIX)
 	@echo "  OBJCOPY $<"
 	@mkdir -p $(@D)
 	@$(OBJCOPY) -O binary $< $@
-	@echo "  GBAFIX  $@"
-	@$(GBAFIX) $@ -t$(GAME_TITLE) -c$(GAME_CODE)
+	@echo "  ROMFIX  $@"
+	@$(ROMFIX) $@ -t $(GAME_TITLE) -c $(GAME_CODE)
 
 $(DUMP): $(ELF)
 	@echo "  OBJDUMP $@"
@@ -93,9 +93,9 @@ $(DUMP): $(ELF)
 dump: $(DUMP)
 
 clean:
-	@echo "  CLEAN"
+	@echo "  CLEAN   $(BUILD_DIR) $(DIST_DIR)"
 	@rm -rf $(BUILD_DIR) $(DIST_DIR)
-	@make -C tools/gbafix clean
+	@make -C tools/romfix clean
 	@make -C tools/rmake clean
 
 run: $(ROM)
