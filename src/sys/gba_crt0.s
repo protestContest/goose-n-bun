@@ -90,6 +90,13 @@ start_vector:
     lsr     r2,#2
     bl      BlockCopy
 
+    // Initialize Heap
+    ldr     r0, =__HEAP_START__
+    ldr     r1, =__HEAP_SIZE__
+    sub     r1, #4
+    neg     r1, r1
+    str     r1, [r0]
+
     // Call main()
     mov     r0, #0 // int argc
     mov     r1, #0 // char *argv[]
