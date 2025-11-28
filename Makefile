@@ -22,6 +22,8 @@ MAP := $(BUILD_DIR)/$(NAME).map
 ROMFIX := tools/romfix/romfix
 RMAKE := tools/rmake/rmake
 
+RES_MANIFEST := res/Manifest
+
 SRC_S := $(wildcard $(SRC_DIR)/*.s $(SRC_DIR)/**/*.s)
 SRC_C := $(wildcard $(SRC_DIR)/*.c $(SRC_DIR)/**/*.c)
 RES_R := $(wildcard $(RES_DIR)/*)
@@ -57,10 +59,10 @@ $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -MMD -MP -c -o $@ $<
 
-$(BUILD_DIR)/Resources: $(RMAKE) $(RES_R)
-	@echo "  RMAKE   $(RES_R)"
+$(BUILD_DIR)/Resources: $(RMAKE) $(RES_MANIFEST) $(RES_R)
+	@echo "  RMAKE   $(RES_MANIFEST)"
 	@mkdir -p $(@D)
-	@$(RMAKE) $(RES_R) > $@
+	@$(RMAKE) $(RES_MANIFEST) > $@
 
 $(BUILD_DIR)/Resources.o: $(BUILD_DIR)/Resources
 	@echo "  OBJCOPY $<"

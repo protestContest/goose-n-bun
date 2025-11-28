@@ -14,5 +14,5 @@ res-extract: res_extract.c
 	@$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	@echo "  CLEAN"
+	@echo "  CLEAN   rmake res-extract"
 	@rm -rf rmake res-extract
