@@ -12,6 +12,7 @@
 #define BTN_L       (1 << 9)
 
 void SleepUntil(u16 keys);
+void WaitForInput(void);
 void OnKeyDown(u16 keys, FnPtr handler);
 void OnKeyUp(u16 keys, FnPtr handler);
 void GetInput(void);

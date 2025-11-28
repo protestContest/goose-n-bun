@@ -1,5 +1,5 @@
 #include "interrupt.h"
-#include "bios.h"
+#include "hardware.h"
 
 static FnPtr handlers[14] = {0};
 
@@ -62,4 +62,3 @@ void VSync(void)
   EnableInterrupts(true);
   VBlankIntrWait();
 }
-

@@ -132,16 +132,69 @@ Stop:
     swi     #0x03
     bx      lr
 
+    .global IntrWait
+// r0: clear IF?
+// r1: interrupts to wait for
+IntrWait:
+    swi     #0x04
+    bx      lr
+
     .global VBlankIntrWait
 VBlankIntrWait:
     swi     #0x05
     bx      lr
 
+    .global Sqrt
+// r0: u32
+Sqrt:
+    swi     #0x08
+    bx       lr
+
+    .global Atan
+// r0: Tan, 16bit (1bit sign, 1bit integral part, 14bit decimal part)
+// return: "-PI/2<THETA/<PI/2" in a range of C000h-4000h.
+Atan:
+    swi     #0x09
+    bx      lr
+
+    .global Atan2
+// r0: x, 16bit (1bit sign, 1bit integral part, 14bit decimal part)
+// r1: y, same
+Atan2:
+    swi     #0x0A
+    bx      lr
+
+    .global Diff8bitUnFilter
+Diff8bitUnFilter:
+    swi     #0x16
+    bx      lr
+
+    .global Diff16bitUnFilter
+Diff16bitUnFilter:
+    swi     #0x18
+    bx      lr
+
+    .global HuffUnComp
+HuffUnComp:
+    swi     #0x13
+    bx      lr
+
+    .global LZ77UnComp
+LZ77UnComp:
+    swi     #0x11
+    bx      lr
+
+    .global RLUnComp
+RLUnComp:
+    swi     #0x14
+    bx      lr
+
+
+// set C division and modulo operators to call BIOS
     .global __aeabi_idiv
     .global __aeabi_uidiv
     .global __aeabi_idivmod
     .global __aeabi_uidivmod
-// set C division and modulo operators to call BIOS
 __aeabi_idiv:
 __aeabi_idivmod:
     swi     #0x06

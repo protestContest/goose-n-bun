@@ -2,6 +2,24 @@
 
 // https://problemkaputt.de/gbatek.htm#gbamemorymap
 
+// BIOS
+
+/*
+numWords is rounded up to a multiple of 8
+numWords is a 20-bit uint
+src and dst must be word aligned
+*/
+extern void BlockFill(u32 *src, u32 *dst, u32 numWords);
+extern void BlockCopy(u32 *src, u32 *dst, u32 numWords);
+
+extern void Reset(void);
+extern void Halt(void);
+extern void Stop(void);
+extern void IntrWait(bool clearIF, u32 interrupts);
+extern void VBlankIntrWait(void);
+
+
+
 // LCD
 #define REG_DISPCNT     *((volatile u16*)0x04000000)
 #define GraphicsMode(n) do {\

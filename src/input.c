@@ -1,6 +1,5 @@
 #include "input.h"
 #include "hardware.h"
-#include "bios.h"
 #include "interrupt.h"
 #include "debug.h"
 
@@ -22,6 +21,11 @@ void SleepUntil(u16 keys)
   REG_KEYCNT = keys | 0xC000;
   OnInterrupt(INT_KEYPAD, Wake);
   Stop();
+}
+
+void WaitForInput(void)
+{
+  IntrWait(true, INT_KEYPAD);
 }
 
 void OnKeyDown(u16 keys, FnPtr handler)

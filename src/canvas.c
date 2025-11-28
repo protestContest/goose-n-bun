@@ -1,5 +1,5 @@
 #include "canvas.h"
-#include "bios.h"
+#include "hardware.h"
 
 static Pen pen = {0};
 
