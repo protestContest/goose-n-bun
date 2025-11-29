@@ -29,3 +29,4 @@ typedef void (*FnPtr)(void);
 #define ArrayCount(a)     (sizeof(a) / sizeof(a)[0])
 #define Min(a, b)         ((a) > (b) ? (b) : (a))
 #define Max(a, b)         ((a) > (b) ? (a) : (b))
+#define Align(n, m)       (((u32)(n) + (u32)(m) - 1) & ~((u32)(m) - 1))

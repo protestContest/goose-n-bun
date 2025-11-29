@@ -3,13 +3,13 @@ GAME_TITLE := BISQUIK
 GAME_CODE := ZACK
 
 DEFINES :=
-INCLUDES := inc
 LIBS :=
 
 CC := arm-none-eabi-gcc
 OBJDUMP := arm-none-eabi-objdump
 OBJCOPY := arm-none-eabi-objcopy
 
+INC_DIR := inc
 SRC_DIR := src
 RES_DIR := res
 BUILD_DIR := build
@@ -31,7 +31,7 @@ RES_R := $(wildcard $(RES_DIR)/*)
 DEFINES += -D__GBA__
 ARCH := -mcpu=arm7tdmi -mtune=arm7tdmi
 
-IFLAGS := -I$(INCLUDES) -include prefix.h
+IFLAGS := -I$(INC_DIR) -include prefix.h
 WFLAGS := -Wall -Wextra -Werror -Wno-multichar -Wno-unused-parameter -Wno-main
 
 ASFLAGS += -x assembler-with-cpp $(DEFINES) $(ARCH) -mthumb -mthumb-interwork -ffunction-sections -fdata-sections
@@ -45,7 +45,7 @@ OBJS := \
 
 DEPS := $(OBJS:.o=.d)
 
-.PHONY: all clean dump run
+.PHONY: all clean dump run $(RMAKE)
 
 all: $(ROM)
 
@@ -70,10 +70,10 @@ $(BUILD_DIR)/Resources.o: $(BUILD_DIR)/Resources
 	@$(OBJCOPY) -I binary -O elf32-littlearm --rename-section .data=.res $< $@
 	@$(OBJCOPY) --redefine-sym _binary_$(BUILD_DIR)_Resources_start=__Resources__ $@ $@
 
-$(ROMFIX): tools/romfix/romfix.c
+$(ROMFIX):
 	@make -C tools/romfix
 
-$(RMAKE): tools/rmake/rmake.c
+$(RMAKE):
 	@make -C tools/rmake rmake
 
 $(ELF): $(OBJS)

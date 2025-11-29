@@ -24,8 +24,8 @@ format of the resource file:
      /               /
      +---------------+
 
-The `offset` properties in the resource map are offsets from the beginning of the resource file. The
-resource IDs are hashes of the resource file names.
+The `offset` properties in the resource map are offsets from the beginning of the resource file.
+Offsets are aligned to 4 bytes. The resource IDs are hashes of the resource file names.
 
 Resource data begins with a header. The high 24 bits are the resource's uncompressed size. The low
 8 bits are flags:

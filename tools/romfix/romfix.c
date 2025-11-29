@@ -47,7 +47,6 @@ void Usage(void)
   exit(1);
 }
 
-#define min(a,b) ((a) < (b) ? (a) : (b))
 char *ParseOpts(int argc, char *argv[])
 {
   int ch;
@@ -57,13 +56,13 @@ char *ParseOpts(int argc, char *argv[])
     if ((ch = getopt(argc, argv, "t:c:m:")) >= 0) {
       switch (ch) {
       case 't':
-        memcpy(header.title, optarg, min(12, strlen(optarg)));
+        memcpy(header.title, optarg, Min(12, strlen(optarg)));
         break;
       case 'c':
-        memcpy(header.gameCode, optarg, min(4, strlen(optarg)));
+        memcpy(header.gameCode, optarg, Min(4, strlen(optarg)));
         break;
       case 'm':
-        memcpy(header.makerCode, optarg, min(2, strlen(optarg)));
+        memcpy(header.makerCode, optarg, Min(2, strlen(optarg)));
         break;
       default:
         Usage();
