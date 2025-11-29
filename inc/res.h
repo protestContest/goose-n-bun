@@ -47,16 +47,19 @@ Bit 3: Huffman data size 8-bit
 Bit 4-6: Compression type:
   LZ77: 1
   Huffman: 2
-  Run length: 4
+  Run length: 3
 
 Bit 7: Set when data is filtered
 */
 
-#define Filter8Bit      ((1 << 7) | (1 << 0))
-#define Filter16Bit     ((1 << 7) | (1 << 1))
+#define FilterFlag      (1 << 7)
+#define Filter8Bit      (FilterFlag | (1 << 0))
+#define Filter16Bit     (FilterFlag | (1 << 1))
 #define Huffman4Bit     ((2 << 4) | (1 << 2))
 #define Huffman8Bit     ((2 << 4) | (1 << 3))
+#define CompTypeMask    0x70
 #define LZ77            (1 << 4)
+#define Huffman         (2 << 4)
 #define RunLength       (3 << 4)
 
 typedef struct {

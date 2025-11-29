@@ -51,7 +51,7 @@ void *Alloc(i32 size)
   i32 *ptr = __HEAP_START__;
   i32 words = Align(size, 4) >> 2;
 
-  ptr = Seek(ptr, words);
+  ptr = Seek(ptr + 1, words);
   if (!ptr) return 0;
 
   if (-ptr[-1] > words) {
@@ -76,11 +76,12 @@ void Copy(void *src, void *dst, u32 size)
   u8 *srcBytes = (u8*)src;
   u8 *dstBytes = (u8*)dst;
 
-  if (size >= 8 && (u32)srcBytes == Align(srcBytes, 4) && (u32)dstBytes == Align(dstBytes, 4)) {
+  if (size >= 32 && (u32)srcBytes == Align(srcBytes, 4) && (u32)dstBytes == Align(dstBytes, 4)) {
     BlockCopy(srcBytes, dstBytes, size/4);
-    srcBytes += size/4;
-    dstBytes += size/4;
-    for (u32 i = 0; i < size%4; i++) {
+    srcBytes += size >> 2;
+    dstBytes += size >> 2;
+
+    for (u32 i = 0; i < (size & 0x3); i++) {
       *dstBytes++ = *srcBytes++;
     }
     return;

@@ -37,29 +37,51 @@ void *GetResource(char *name)
   u32 header = *((u32*)data);
   u8 flags = header & 0xFF;
   u32 length = header >> 8;
-  data += 4;
+
 
   if ((header & 0xFF) == 0) {
-    return data;
+    return data + sizeof(header);
   }
 
-  u8 *dst = Alloc(length);
+  if (flags & FilterFlag) {
+    u8 *dst = Alloc(length + sizeof(header));
+    *((u32*)dst) = header;
 
-  if (flags & Huffman4Bit) {
-    HuffUnComp((HuffData*)data, dst);
-  } else if (flags & Huffman8Bit) {
-    HuffUnComp((HuffData*)data, dst);
-  } else if (flags & LZ77) {
-    LZ77UnComp((LZ77Data*)data, dst);
-  } else if (flags & RunLength) {
-    RLUnComp((RLData*)data, dst);
+    if ((flags & CompTypeMask) == Huffman) {
+      HuffUnComp((HuffData*)data, dst + sizeof(header));
+    } else if ((flags & CompTypeMask) == LZ77) {
+      LZ77UnComp((LZ77Data*)data, dst + sizeof(header));
+    } else if ((flags & CompTypeMask) == RunLength) {
+      RLUnComp((RLData*)data, dst + sizeof(header));
+    } else {
+      Copy(data + sizeof(header), dst + sizeof(header), length);
+    }
+
+    u8 *dst2 = Alloc(length);
+
+    if (flags & Filter8Bit) {
+      Diff8bitUnFilter(dst, dst2);
+    } else {
+      Diff16bitUnFilter(dst, dst2);
+    }
+
+    Free(dst);
+    return dst2;
+  } else {
+    u8 *dst = Alloc(length);
+
+    if ((flags & CompTypeMask) == Huffman) {
+      HuffUnComp((HuffData*)data, dst);
+    } else if ((flags & CompTypeMask) == LZ77) {
+      LZ77UnComp((LZ77Data*)data, dst);
+    } else if ((flags & CompTypeMask) == RunLength) {
+      RLUnComp((RLData*)data, dst);
+    } else {
+      Copy(data + sizeof(header), dst, length);
+    }
+
+    return dst;
   }
 
-  if (flags & Filter8Bit) {
-    Diff8bitUnFilter(dst, dst);
-  } else if (flags & Filter16Bit) {
-    Diff16bitUnFilter(dst, dst);
-  }
-
-  return dst;
+  return 0;
 }

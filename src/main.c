@@ -5,6 +5,7 @@
 #include "interrupt.h"
 #include "res.h"
 #include "mem.h"
+#include "debug.h"
 
 void TestScreen(void)
 {
@@ -55,12 +56,14 @@ void Foo(void)
 
 void main(void)
 {
+  EnableDebug();
   GraphicsMode(3);
   ShowLayer(DISP_BG2);
   SetColor(WHITE);
   SetFont("Geneva");
 
   char *text = GetResource("test");
+  if (!text) Error("Could not get text");
 
   MoveTo(100, 100);
   Print(text);
