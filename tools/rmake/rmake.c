@@ -20,7 +20,8 @@ followed by a list of optional flag characters:
 
 typedef struct {
   char *name;
-  u32 flags;
+  u32 compressionType;
+  u32 compressionArg;
   char *path;
   u32 size;
 } ResInfo;
@@ -45,6 +46,7 @@ u32 Hash(void *data, u32 size)
 }
 
 #define IsWhitespace(c) ((c) == ' ' || (c) == '\t' || (c) == '\n')
+#define Align(n, m)       (((u64)(n) + (u64)(m) - 1) & ~((u64)(m) - 1))
 
 // add to dynamic array, and adjust dataSize
 void ManifestAppend(Manifest *manifest, ResInfo info)
@@ -58,7 +60,7 @@ void ManifestAppend(Manifest *manifest, ResInfo info)
   }
 
   manifest->items[manifest->count++] = info;
-  manifest->dataSize += info.size + sizeof(u32);
+  manifest->dataSize += Align(info.size, 4);
 }
 
 char *ReadManifest(char *path, u32 *size)
@@ -157,22 +159,26 @@ Manifest *ParseManifest(char *path)
       while (cur < fileEnd && !IsWhitespace(*cur)) {
         switch (*cur) {
         case 'L':
-          info.flags |= LZ77;
+          info.compressionType = LZ77;
           break;
         case 'h':
-          info.flags |= Huffman4Bit;
+          info.compressionType = Huffman;
+          info.compressionArg = 4;
           break;
         case 'H':
-          info.flags |= Huffman8Bit;
+          info.compressionType = Huffman;
+          info.compressionArg = 8;
           break;
         case 'R':
-          info.flags |= RunLength;
+          info.compressionType = RunLength;
           break;
         case 'f':
-          info.flags |= Filter8Bit;
+          info.compressionType = SubFilter;
+          info.compressionArg = 1;
           break;
         case 'F':
-          info.flags |= Filter16Bit;
+          info.compressionType = SubFilter;
+          info.compressionArg = 2;
           break;
         }
         cur++;
@@ -196,9 +202,9 @@ Manifest *ParseManifest(char *path)
   return manifest;
 }
 
-void Filter(u8 *data, u32 size, bool halfWord)
+void Filter(u8 *data, u32 size, u32 dataSize)
 {
-  if (halfWord) {
+  if (dataSize == 2) {
     i16 *words = (i16*)data;
     size >>= 1;
     i16 prev = words[0];
@@ -243,39 +249,41 @@ u8 *CopyItem(ResInfo *info, FILE *f, u8 *dst)
 {
   fseek(f, 0, SEEK_SET);
 
-  info->flags |= info->size << 8;
-  *((u32*)dst) = info->flags;
-  dst += sizeof(info->flags);
+  u32 flags = (info->size << 8) | (info->compressionType << 4) | (info->compressionArg);
+  *((u32*)dst) = flags;
+  dst += sizeof(flags);
 
-  if ((info->flags & 0xFF) == 0) {
+  if (info->compressionType == 0) {
     fread(dst, info->size, 1, f);
-    return dst + info->size;
+    return dst + Align(info->size, 4);
   }
 
   u8 *data = malloc(info->size);
   fread(data, info->size, 1, f);
 
-  if (info->flags & Filter8Bit) {
-    Filter(data, info->size, false);
-  } else if (info->flags & Filter16Bit) {
-    Filter(data, info->size, true);
-  }
-
-  if (info->flags & Huffman4Bit) {
-    info->size = HuffmanEncode(data, info->size, 4, dst);
-  } else if (info->flags & Huffman8Bit) {
-    info->size = HuffmanEncode(data, info->size, 8, dst);
-  } else if (info->flags & LZ77) {
+  switch (info->compressionType) {
+  case LZ77:
     info->size = LZ77Encode(data, info->size, dst);
-  } else if (info->flags & RunLength) {
+    break;
+  case Huffman:
+    info->size = HuffmanEncode(data, info->size, info->compressionArg, dst);
+    break;
+  case RunLength:
     info->size = RunLengthEncode(data, info->size, dst);
-  } else {
+    break;
+  case SubFilter:
+    memcpy(dst, data, info->size);
+    Filter(dst, info->size, info->compressionArg);
+    break;
+  default:
     memcpy(dst, data, info->size);
   }
 
   free(data);
 
-  return dst + info->size;
+  fprintf(stderr, "Next: %lld\n", (u64)dst + Align(info->size, 4));
+
+  return dst + Align(info->size, 4);
 }
 
 ResFile *NewResFile(Manifest *manifest)
@@ -303,6 +311,7 @@ int main(int argc, char *argv[])
 
   ResFile *resFile = NewResFile(manifest);
   u8 *data = ResFileData(resFile);
+  u8 *start = data;
 
   for (u32 i = 0; i < manifest->count; i++) {
     char *path = manifest->items[i].path;
@@ -318,12 +327,13 @@ int main(int argc, char *argv[])
 
     data = CopyItem(&manifest->items[i], f, data);
 
+    fprintf(stderr, "Copied %ld bytes\n", data - start);
+
     fclose(f);
 
-    fprintf(stderr, "Resource \"%s\" ID: %08X  header: %08X: %d bytes at %d\n",
+    fprintf(stderr, "Resource \"%s\" %08X: %d bytes at %d\n",
       resName,
       resFile->resMap[i].id,
-      *((u32*)(data - manifest->items[i].size - sizeof(u32))),
       manifest->items[i].size,
       resFile->resMap[i].offset);
   }

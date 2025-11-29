@@ -62,7 +62,10 @@ void main(void)
   SetColor(WHITE);
   SetFont("Geneva");
 
-  char *text = GetResource("test");
+  MoveTo(100, 50);
+  Print("Test");
+
+  char *text = Uncompress(GetResource("test"), 0);
   if (!text) Error("Could not get text");
 
   MoveTo(100, 100);
