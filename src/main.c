@@ -3,6 +3,8 @@
 #include "str.h"
 #include "input.h"
 #include "interrupt.h"
+#include "res.h"
+#include "mem.h"
 
 void TestScreen(void)
 {
@@ -55,12 +57,18 @@ void main(void)
 {
   GraphicsMode(3);
   ShowLayer(DISP_BG2);
+  SetColor(WHITE);
+  SetFont("Geneva");
 
-  TestScreen();
+  char *text = GetResource("test");
+
+  MoveTo(100, 100);
+  Print(text);
+
   OnKeyDown(BTN_A, Foo);
 
   while (true) {
-    VSync();
-    GetInput();
+    // VSync();
+    // GetInput();
   }
 }

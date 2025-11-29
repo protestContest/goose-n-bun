@@ -1,4 +1,5 @@
 #include "canvas.h"
+#include "mem.h"
 #include "hardware.h"
 
 static Pen pen = {0};

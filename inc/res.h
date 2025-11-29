@@ -47,7 +47,8 @@ Bit 3: Huffman data size 8-bit
 Bit 4-6: Compression type:
   LZ77: 1
   Huffman: 2
-  Run length: 3
+  Run length: 4
+
 Bit 7: Set when data is filtered
 */
 
@@ -70,4 +71,5 @@ typedef struct {
   /* resource data follows resMap */
 } ResFile;
 
+u32 ResLength(char *name);
 void *GetResource(char *name);

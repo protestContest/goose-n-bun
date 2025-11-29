@@ -66,6 +66,25 @@ void *Alloc(i32 size)
 void Free(void *ptr)
 {
   i32 *cur = (i32*)ptr;
+  if (cur < __HEAP_START__ || cur >= __HEAP_END__) return;
   cur[-1] = -cur[-1];
   Gather(cur);
+}
+
+void Copy(void *src, void *dst, u32 size)
+{
+  u8 *srcBytes = (u8*)src;
+  u8 *dstBytes = (u8*)dst;
+
+  if (size >= 8 && (u32)srcBytes == Align(srcBytes, 4) && (u32)dstBytes == Align(dstBytes, 4)) {
+    BlockCopy(srcBytes, dstBytes, size/4);
+    srcBytes += size/4;
+    dstBytes += size/4;
+    for (u32 i = 0; i < size%4; i++) {
+      *dstBytes++ = *srcBytes++;
+    }
+    return;
+  }
+
+  for (u32 i = 0; i < size; i++) *dstBytes++ = *srcBytes++;
 }

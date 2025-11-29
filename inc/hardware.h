@@ -4,14 +4,6 @@
 
 // BIOS
 
-/*
-numWords is rounded up to a multiple of 8
-numWords is a 20-bit uint
-src and dst must be word aligned
-*/
-extern void BlockFill(u32 *src, u32 *dst, u32 numWords);
-extern void BlockCopy(u32 *src, u32 *dst, u32 numWords);
-
 extern void Reset(void);
 extern void Halt(void);
 extern void Stop(void);

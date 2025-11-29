@@ -1,4 +1,5 @@
 #include "str.h"
+#include "mem.h"
 #include "debug.h"
 
 u32 StrLen(char *s)
@@ -9,24 +10,6 @@ u32 StrLen(char *s)
     s++;
   }
   return len;
-}
-
-void Copy(void *src, void *dst, u32 size)
-{
-  u8 *srcBytes = (u8*)src;
-  u8 *dstBytes = (u8*)dst;
-  if (src == dst) return;
-  if (src > dst) {
-    for (u32 i = 0; i < size; i++) dstBytes[i] = srcBytes[i];
-  } else {
-    for (u32 i = 0; i < size; i++) dstBytes[size-1-i] = srcBytes[size-1-i];
-  }
-}
-
-void Clear(void *src, u32 size)
-{
-  u8 *srcBytes = (u8*)src;
-  for (u32 i = 0; i < size; i++) srcBytes[i] = 0;
 }
 
 u32 NumDigits(i32 num)
