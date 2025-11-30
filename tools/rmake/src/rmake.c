@@ -5,13 +5,14 @@
 
 #include "manifest.h"
 #include "huffman.h"
+#include "lzss.h"
 
 /*
 Reads a manifest file and packs resources into a resource file. The manifest file is a list of
 resource specs, one per line. Each resource spec specifies the relative path of the resource
 followed by a list of optional flag characters:
 
-  L: Compress with LZ77
+  L: Compress with LZSS
   h: Compress with Huffman, 4-bit
   H: Compress with Huffman, 8-bit
   R: Compress with run-length
@@ -40,13 +41,6 @@ void Filter(u8 *data, u32 size, u32 dataSize)
       prev = cur;
     }
   }
-}
-
-u32 LZ77Encode(u8 *data, u32 size, u8 *dst)
-{
-  fprintf(stderr, "Unimplemented\n");
-  exit(3);
-  return size;
 }
 
 void RunLengthEncode(u8 *data, ResInfo *info)
@@ -134,8 +128,12 @@ void EncodeItem(ResInfo *info)
   u8 *data;
 
   switch (info->compressionType) {
-  case LZ77:
-    // info->size = LZ77Encode(data, info->size, dst);
+  case LZSS:
+    data = malloc(info->size);
+    fread(data, info->size, 1, f);
+    fclose(f);
+    LZSSEncode(data, info);
+    free(data);
     return;
   case Huffman:
     data = malloc(info->size);

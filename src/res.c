@@ -31,8 +31,8 @@ void *Uncompress(void *src, void *dst)
     Copy(ResData(src), dst, size);
   } else if (type == Huffman) {
     HuffUnComp((HuffData*)src, dst);
-  } else if (type == LZ77) {
-    LZ77UnComp((LZ77Data*)src, dst);
+  } else if (type == LZSS) {
+    LZSSUnComp((LZSSData*)src, dst);
   } else if (type == RunLength) {
     RLUnComp((RLData*)src, dst);
   } else if (type == SubFilter) {

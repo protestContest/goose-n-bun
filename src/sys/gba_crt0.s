@@ -179,8 +179,8 @@ HuffUnComp:
     swi     #0x13
     bx      lr
 
-    .global LZ77UnComp
-LZ77UnComp:
+    .global LZSSUnComp
+LZSSUnComp:
     swi     #0x11
     bx      lr
 

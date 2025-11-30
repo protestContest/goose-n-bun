@@ -44,7 +44,7 @@ Bit 0-3: Compression argument
   For huffman, data bit size (usually 4 or 8)
   For sub-filter, data size in bytes (1 or 2)
 Bit 4-7: Compression type:
-  LZ77: 1
+  LZSS: 1
   Huffman: 2
   Run length: 3
   Sub-filter: 8
@@ -53,7 +53,7 @@ Bit 4-7: Compression type:
 
 enum {
   Uncompressed = 0,
-  LZ77 = 1,
+  LZSS = 1,
   Huffman = 2,
   RunLength = 3,
   SubFilter = 8
@@ -118,7 +118,7 @@ extern void HuffUnComp(HuffData *src, void *dst);
 typedef struct {
   u32 header;
     // Bit 0-3   Reserved (0)
-    // Bit 4-7   Compressed type (must be 1 for LZ77)
+    // Bit 4-7   Compressed type (must be 1 for LZSS)
     // Bit 8-31  Size of decompressed data
   struct {
     u8 blockTypes; // type of each block, MSB-first
@@ -130,8 +130,8 @@ typedef struct {
       //   Bit 4-7   Number of bytes to copy (minus 3)
       //   Bit 8-15  Disp LSBs
   } groups[];
-} LZ77Data;
-extern void LZ77UnComp(LZ77Data *src, void *dst);
+} LZSSData;
+extern void LZSSUnComp(LZSSData *src, void *dst);
 
 typedef struct {
   u32 header;

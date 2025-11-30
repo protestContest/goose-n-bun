@@ -124,7 +124,7 @@ Manifest *ParseManifest(char *path)
       while (cur < fileEnd && !IsWhitespace(*cur)) {
         switch (*cur) {
         case 'L':
-          info.compressionType = LZ77;
+          info.compressionType = LZSS;
           break;
         case 'h':
           info.compressionType = Huffman;
