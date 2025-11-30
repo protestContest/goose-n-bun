@@ -27,16 +27,25 @@ void *Uncompress(void *src, void *dst)
 
   if (!dst) dst = Alloc(size);
 
-  if (type == Huffman) {
+  if (type == Uncompressed) {
+    Copy(ResData(src), dst, size);
+  } else if (type == Huffman) {
     HuffUnComp((HuffData*)src, dst);
   } else if (type == LZ77) {
     LZ77UnComp((LZ77Data*)src, dst);
   } else if (type == RunLength) {
     RLUnComp((RLData*)src, dst);
   } else if (type == SubFilter) {
-    Diff8bitUnFilter(src, dst);
+    if ((header & 0x0F) == 1) {
+      Diff8bitUnFilter(src, dst);
+    } else if ((header & 0x0F) == 2) {
+      Diff16bitUnFilter(src, dst);
+    } else {
+      Error("Invalid header");
+    }
   } else {
-    Copy(ResData(src), dst, size);
+    Error("Invalid header");
   }
+
   return dst;
 }

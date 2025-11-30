@@ -52,6 +52,7 @@ Bit 4-7: Compression type:
 */
 
 enum {
+  Uncompressed = 0,
   LZ77 = 1,
   Huffman = 2,
   RunLength = 3,

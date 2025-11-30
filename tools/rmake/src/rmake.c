@@ -49,11 +49,74 @@ u32 LZ77Encode(u8 *data, u32 size, u8 *dst)
   return size;
 }
 
-u32 RunLengthEncode(u8 *data, u32 size, u8 *dst)
+void RunLengthEncode(u8 *data, ResInfo *info)
 {
-  fprintf(stderr, "Unimplemented\n");
-  exit(3);
-  return size;
+  u32 header = (info->size << 8) | (RunLength << 4);
+  u32 size = sizeof(header);
+
+  u32 start, end = 0;
+  while (end < info->size) {
+    start = end;
+    while (
+        end < info->size &&
+        (end + 3 > info->size || data[end] != data[end+1] || data[end] != data[end+2]) &&
+        end - start < 128) {
+      end++;
+    }
+    if (end - start > 0) {
+      size += end - start + 1;
+    }
+
+    start = end;
+    while (end < info->size && data[end] == data[start] && end - start < 130) {
+      end++;
+    }
+    if (end - start > 2) {
+      size += 2;
+      start = end;
+    } else {
+      end = start;
+    }
+  }
+
+  u8 *encoded = malloc(Align(size, 4));
+  *((u32*)encoded) = header;
+  u8 *cur = encoded + sizeof(header);
+
+  end = 0;
+  while (end < info->size) {
+    start = end;
+    while (
+        end < info->size &&
+        (end > info->size - 3 || data[end] != data[end+1] || data[end] != data[end+2]) &&
+        end - start < 128) {
+      end++;
+    }
+    if (end - start > 0) {
+      *cur++ = end - start - 1;
+      for (u32 i = start; i < end; i++) {
+        *cur++ = data[i];
+      }
+    }
+
+    start = end;
+    while (end < info->size && data[end] == data[start] && end - start < 130) {
+      end++;
+    }
+    if (end - start > 2) {
+      *cur++ = (end - start - 3) | 0x80;
+      *cur++ = data[start];
+    } else {
+      end = start;
+    }
+  }
+
+  for (u32 i = size; i < Align(size, 4); i++) {
+    encoded[i] = 0;
+  }
+
+  info->data = encoded;
+  info->size = size;
 }
 
 void EncodeItem(ResInfo *info)
@@ -82,7 +145,11 @@ void EncodeItem(ResInfo *info)
     free(data);
     return;
   case RunLength:
-    // info->size = RunLengthEncode(data, info->size, dst);
+    data = malloc(info->size);
+    fread(data, info->size, 1, f);
+    fclose(f);
+    RunLengthEncode(data, info);
+    free(data);
     return;
   case SubFilter:
     Filter(data, info->size, info->compressionArg);
