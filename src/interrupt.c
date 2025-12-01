@@ -24,10 +24,11 @@ void OnInterrupt(u16 interrupts, FnPtr handler)
   REG_IE |= interrupts;
 
   for (u16 i = 0; i < ArrayCount(handlers); i++) {
+    u16 intr = 1 << i;
     if (interrupts & (1 << i)) {
-      if ((1 << i) == INT_VBLANK) REG_DISPSTAT |= LCD_VBLANK_IRQ;
-      if ((1 << i) == INT_HBLANK) REG_DISPSTAT |= LCD_HBLANK_IRQ;
-      if ((1 << i) == INT_VCOUNT) REG_DISPSTAT |= LCD_VCOUNT_IRQ;
+      if (intr == INT_VBLANK) REG_DISPSTAT |= LCD_VBLANK_IRQ;
+      if (intr == INT_HBLANK) REG_DISPSTAT |= LCD_HBLANK_IRQ;
+      if (intr == INT_VCOUNT) REG_DISPSTAT |= LCD_VCOUNT_IRQ;
       handlers[i] = handler;
     }
   }

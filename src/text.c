@@ -37,6 +37,8 @@ static i16 DoString(char *str, FontRec *rec, bool draw)
   GetPen(&pen);
   i16 x = draw ? pen.pos.h : 0;
   i16 y = draw ? pen.pos.v : 0;
+  i16 start = x;
+  i16 end = x;
 
   table_size = rec->last_char - rec->first_char + 2;
   bit_image = (i16*)(rec + 1);
@@ -46,6 +48,14 @@ static i16 DoString(char *str, FontRec *rec, bool draw)
   while (*str) {
     u8 offset, width;
     i16 loc, img_width, index, first_word, last_word, leading_bits, trailing_bits;
+
+    if (x > end) end = x;
+    if (*str == '\n') {
+      x = start;
+      y += rec->ascent + rec->descent + rec->leading;
+      str++;
+      continue;
+    }
 
     /* find the table index for this char; default to the missing char */
     index = table_size - 1;
@@ -102,7 +112,7 @@ static i16 DoString(char *str, FontRec *rec, bool draw)
     str++;
   }
 
-  return x;
+  return end - start;
 }
 
 void SetFont(char *name)
@@ -118,7 +128,7 @@ void GetFontInfo(FontInfo *info)
   info->descent = currentFont->descent;
   info->widMax = currentFont->wid_max;
   info->leading = currentFont->leading;
-  info->lineHeight = info->ascent + info->descent + info->leading;
+  info->lineHeight = info->ascent + info->descent;
 }
 
 void Print(char *str)
@@ -128,8 +138,21 @@ void Print(char *str)
   Move(width, 0);
 }
 
-u32 StringWidth(char *str)
+u32 TextWidth(char *str)
 {
   if (!currentFont) return 0;
   return DoString(str, currentFont, false);
+}
+
+u32 TextHeight(char *str)
+{
+  FontInfo info = {0};
+  GetFontInfo(&info);
+  u32 lines = 1;
+
+  while (*str) {
+    if (*str == '\n') lines++;
+    str++;
+  }
+  return lines*info.lineHeight;
 }

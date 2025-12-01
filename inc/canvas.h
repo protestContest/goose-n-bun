@@ -24,12 +24,12 @@ extern Rect screenRect;
 #define SCREEN_H 160
 
 #define PixelAt(x, y)     VRAM[(x) + (y)*SCREEN_W]
-#define RGB(r, g, b) (((r) & 0x1F) | (((g) & 0x1F) << 5) | (((b) & 0x1F) << 10))
+#define RGB(r, g, b) ((((r)>>3) & 0x1F) | ((((g)>>3) & 0x1F) << 5) | ((((b)>>3) & 0x1F) << 10))
 #define BLACK RGB(0, 0, 0)
-#define WHITE RGB(31, 31, 31)
-#define RED RGB(31, 0, 0)
-#define GREEN RGB(0, 31, 0)
-#define BLUE RGB(0, 0, 31)
+#define WHITE RGB(255, 255, 255)
+#define RED RGB(255, 0, 0)
+#define GREEN RGB(0, 255, 0)
+#define BLUE RGB(0, 0, 255)
 
 void ClearScreen(u16 color);
 

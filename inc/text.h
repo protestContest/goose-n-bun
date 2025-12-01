@@ -11,4 +11,5 @@ typedef struct {
 void SetFont(char *name);
 void GetFontInfo(FontInfo *info);
 void Print(char *str);
-u32 StringWidth(char *str);
+u32 TextWidth(char *str);
+u32 TextHeight(char *str);

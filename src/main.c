@@ -6,6 +6,9 @@
 #include "res.h"
 #include "mem.h"
 #include "debug.h"
+#include "ui.h"
+#include "math.h"
+#include "time.h"
 
 void TestScreen(void)
 {
@@ -15,66 +18,70 @@ void TestScreen(void)
   SetFont(fontName);
   GetFontInfo(&font);
 
+  char text[256] = {0};
+  char *t = text;
+  t = StrCat(t, fontName);
+  t = StrCat(t, "\n\n");
+  t = StrCat(t, "Jackdaws love my big sphinx of quartz\n");
+  t = StrCat(t, "\n");
+  t = StrCat(t, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\n");
+  t = StrCat(t, "abcdefghijklmnopqrstuvwxyz\n");
+  t = StrCat(t, "1234567890&@.,?!'\"()\n");
+  t = StrCat(t, "\n");
+
   char infoLine[37] = {0};
   Copy("Ascent: ^  Descent: ^  Leading: ^", infoLine, 33);
   FormatInt(infoLine, font.ascent, 36);
   FormatInt(infoLine, font.descent, 36);
   FormatInt(infoLine, font.leading, 36);
+  StrCat(t, infoLine);
 
-  char *lines[] = {
-    fontName,
-    "",
-    "Jackdaws love my big sphinx of quartz",
-    "",
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    "abcdefghijklmnopqrstuvwxyz",
-    "1234567890&@.,?!'\"()",
-    "",
-    infoLine
-  };
-
-  u32 height = ArrayCount(lines)*font.lineHeight;
-  u32 start = SCREEN_H/2 - height/2 + font.ascent;
-  for (u32 i = 0; i < ArrayCount(lines); i++) {
-    u32 width = StringWidth(lines[i]);
-    MoveTo(SCREEN_W/2 - width/2, start + i*font.lineHeight);
-    Print(lines[i]);
-  }
+  Alert(text);
 }
 
-volatile bool foo = false;
+char *haikus[] = {
+  "The wren\nEarns his living\nNoiselessly.",
+  "From time to time\nThe clouds give rest\nTo the moon-beholders.",
+  "Over-ripe sushi,\nThe Master\nIs full of regret.",
+  "Consider me\nAs one who loved poetry\nAnd persimmons.",
+  "In the cicada's cry\nNo sign can foretell\nHow soon it must die.",
+  "Blowing from the west\nFallen leaves gather\nIn the east.",
+  "Winter seclusion -\nListening, that evening,\nTo the rain in the mountain.",
+  "Don't weep, insects -\nLovers, stars themselves,\nMust part.",
+  "My life, -\nHow much more of it remains?\nThe night is brief.",
+  "An old silent pond...\nA frog jumps into the pond,\nsplash! Silence again.",
+  "I kill an ant\nand realize my three children\nhave been watching.",
+  "Over the wintry\nforest, winds howl in rage\nwith no leaves to blow.",
+};
 
-void Foo(void)
+void Popup(void)
 {
-  if (foo) {
-    ClearScreen(BLUE);
-  } else {
-    ClearScreen(RED);
-  }
-  foo = !foo;
+  RandBetween(0, 12);
+  char *text = haikus[RandBetween(0, ArrayCount(haikus))];
+  i16 x = RandBetween(0, SCREEN_W - TextWidth(text) - 16);
+  i16 y = RandBetween(0, SCREEN_H - TextHeight(text) - 16);
+  TextWindow(text, x, y);
+  SetTimeout(100, Popup);
 }
 
 void main(void)
 {
   EnableDebug();
+
+  OnInterrupt(INT_VBLANK, UpdateTime);
+
   GraphicsMode(3);
   ShowLayer(DISP_BG2);
-  SetColor(WHITE);
+  ClearScreen(RGB(240, 192, 136));
   SetFont("Geneva");
 
-  MoveTo(100, 50);
-  Print("Test");
+  TestScreen();
 
-  char *text = Uncompress(GetResource("test"), 0);
-  if (!text) Error("Could not get text");
-
-  MoveTo(100, 100);
-  Print(text);
-
-  OnKeyDown(BTN_A, Foo);
+  OnKeyDown(BTN_A, Popup);
 
   while (true) {
-    // VSync();
-    // GetInput();
+    VSync();
+    CheckTimeouts();
+    GetInput();
   }
 }

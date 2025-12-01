@@ -82,3 +82,11 @@ char *FormatInt(char *buf, i32 num, u32 strLen)
   }
   return buf;
 }
+
+char *StrCat(char *a, char *b)
+{
+  u32 alen = StrLen(a);
+  u32 blen = StrLen(b);
+  Copy(b, a+alen, blen);
+  return a + alen + blen;
+}

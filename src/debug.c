@@ -35,7 +35,7 @@ void Error(char *msg)
   MoveTo(115, 85);
   Line(10, -10);
   if (msg) {
-    u32 width = StringWidth(msg);
+    u32 width = TextWidth(msg);
     MoveTo(SCREEN_W/2 - width/2, 100);
     Print(msg);
   }

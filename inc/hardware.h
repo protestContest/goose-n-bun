@@ -149,12 +149,6 @@ extern void VBlankIntrWait(void);
 #define REG_TM3CNT_L    *((volatile u16*)0x0400010C)
 #define REG_TM3CNT_H    *((volatile u16*)0x0400010E)
 
-#define SetTimeout(ms, fn)  do {\
-  OnInterrupt(INT_TIMER3, fn);\
-  REG_TM3CNT_L = (ms);\
-  REG_TM3CNT_H = 0xC3;\
-} while (0)
-
 
 
 // Serial 1
