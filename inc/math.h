@@ -13,3 +13,6 @@ u32 Hash(void *data, u32 size);
 void SeedRandom(u32 seed);
 u32 Random(void);
 u32 RandBetween(u32 low, u32 high);
+
+i32 Sin(i16 angle);
+#define Cos(angle) Sin((angle) + 90)

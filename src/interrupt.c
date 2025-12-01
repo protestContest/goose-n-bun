@@ -7,8 +7,8 @@ __attribute__((target("arm")))
 static void HandleInterrupt(void)
 {
   u16 fired = REG_IF;
-  REG_IF = fired;
-  REG_BIOSIF = fired;
+  REG_IF |= fired;
+  REG_BIOSIF |= fired;
 
   for (u16 i = 0; i < ArrayCount(handlers); i++) {
     if ((fired & (1 << i)) && handlers[i]) {

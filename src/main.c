@@ -61,7 +61,7 @@ void Popup(void)
   i16 x = RandBetween(0, SCREEN_W - TextWidth(text) - 16);
   i16 y = RandBetween(0, SCREEN_H - TextHeight(text) - 16);
   TextWindow(text, x, y);
-  SetTimeout(100, Popup);
+  SetTimeout(20, Popup);
 }
 
 void main(void)
@@ -75,13 +75,21 @@ void main(void)
   ClearScreen(RGB(240, 192, 136));
   SetFont("Geneva");
 
-  TestScreen();
+  // Rect r = {100, 50, 150, 100};
+  // // PenSize(3, 3);
+  // FrameRoundRect(&r, 8, 8);
 
-  OnKeyDown(BTN_A, Popup);
+  Rect r = {100, 50, 140, 90};
+  FillArc(&r, 0, 360, BLACK);
+
+
+  // TestScreen();
+
+  // OnKeyDown(BTN_A, Popup);
 
   while (true) {
-    VSync();
-    CheckTimeouts();
-    GetInput();
+    // VSync();
+    // CheckTimeouts();
+    // GetInput();
   }
 }

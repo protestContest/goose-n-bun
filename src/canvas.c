@@ -1,8 +1,9 @@
 #include "canvas.h"
 #include "mem.h"
 #include "hardware.h"
+#include "math.h"
 
-static Pen pen = {0};
+static PenState pen = {{0,0}, {1,1}, 0};
 
 Rect screenRect = {0, 0, SCREEN_W, SCREEN_H};
 
@@ -12,9 +13,20 @@ void ClearScreen(u16 color)
   BlockFill((u32*)src, (u32*)VRAM, VRAM_WORDS);
 }
 
-void GetPen(Pen *p)
+Point GetPen(void)
+{
+  return pen.pos;
+}
+
+void GetPenState(PenState *p)
 {
   *p = pen;
+}
+
+void PenSize(u16 h, u16 v)
+{
+  pen.size.h = h;
+  pen.size.v = v;
 }
 
 void SetColor(u16 color)
@@ -49,7 +61,11 @@ void LineTo(i16 x1, i16 y1)
   i16 e2;
 
   while (true) {
-    WritePixel(x0, y0, pen.color);
+    for (i16 py = 0; py < pen.size.v; py++) {
+      for (i16 px = 0; px < pen.size.h; px++) {
+        WritePixel(x0 + px, y0 + py, pen.color);
+      }
+    }
     e2 = 2*err;
     if (e2 >= dy) {
       if (x0 == x1) break;
@@ -71,6 +87,14 @@ void Line(i16 dx, i16 dy)
   LineTo(pen.pos.h + dx, pen.pos.v + dy);
 }
 
+void SetRect(Rect *rect, i16 left, i16 top, i16 right, i16 bottom)
+{
+  rect->left = left;
+  rect->top = top;
+  rect->right = right;
+  rect->bottom = bottom;
+}
+
 void FillRect(Rect *rect, u16 color)
 {
   i16 x, y;
@@ -84,22 +108,31 @@ void FillRect(Rect *rect, u16 color)
 void FrameRect(Rect *rect)
 {
   MoveTo(rect->left, rect->top);
-  LineTo(rect->right - 1, rect->top);
-  LineTo(rect->right - 1, rect->bottom - 1);
-  LineTo(rect->left, rect->bottom - 1);
+  LineTo(rect->right - pen.size.h, rect->top);
+  LineTo(rect->right - pen.size.h, rect->bottom - pen.size.v);
+  LineTo(rect->left, rect->bottom - pen.size.v);
   LineTo(rect->left, rect->top);
 }
 
-void RoundRect(Rect *rect)
+i16 PtToAngle(Rect *r, Point pt)
 {
-  MoveTo(rect->left, rect->top);
-  LineTo(rect->right - 1, rect->top);
-  MoveTo(rect->right - 1, rect->top);
-  LineTo(rect->right - 1, rect->bottom - 1);
-  MoveTo(rect->right - 1, rect->bottom - 1);
-  LineTo(rect->left, rect->bottom - 1);
-  MoveTo(rect->left, rect->bottom - 1);
-  LineTo(rect->left, rect->top);
+  return 0;
+}
+
+void FrameArc(Rect *rect, i16 startAngle, i16 arcAngle)
+{
+}
+
+void FillArc(Rect *rect, i16 startAngle, i16 arcAngle, u16 color)
+{
+}
+
+void FrameRoundRect(Rect *rect, i16 ovalWidth, i16 ovalHeight)
+{
+}
+
+void FillRoundRect(Rect *rect, i16 ovalWidth, i16 ovalHeight, u16 color)
+{
 }
 
 void WritePixel(i16 x, i16 y, u16 color)

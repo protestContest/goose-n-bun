@@ -33,8 +33,8 @@ static i16 DoString(char *str, FontRec *rec, bool draw)
   i16 table_size;
   i16 ow;
   i16 font_type = rec->type & 0xFFFC;
-  Pen pen;
-  GetPen(&pen);
+  PenState pen;
+  GetPenState(&pen);
   i16 x = draw ? pen.pos.h : 0;
   i16 y = draw ? pen.pos.v : 0;
   i16 start = x;

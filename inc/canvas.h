@@ -15,8 +15,9 @@ typedef struct {
 
 typedef struct {
   Point pos;
+  Point size;
   u16 color;
-} Pen;
+} PenState;
 
 extern Rect screenRect;
 
@@ -33,13 +34,23 @@ extern Rect screenRect;
 
 void ClearScreen(u16 color);
 
-void GetPen(Pen *pen);
+Point GetPen(void);
+void GetPenState(PenState *pen);
+void PenSize(u16 h, u16 v);
 void SetColor(u16 color);
 void MoveTo(i16 x, i16 y);
 void Move(i16 dx, i16 dy);
 void LineTo(i16 x, i16 y);
 void Line(i16 dx, i16 dy);
+void SetRect(Rect *rect, i16 left, i16 top, i16 right, i16 bottom);
 void FillRect(Rect *rect, u16 color);
 void FrameRect(Rect *rect);
-void RoundRect(Rect *rect);
+
+i16 PtToAngle(Rect *r, Point pt);
+void FrameArc(Rect *rect, i16 startAngle, i16 arcAngle);
+void FillArc(Rect *rect, i16 startAngle, i16 arcAngle, u16 color);
+
+void FrameRoundRect(Rect *rect, i16 ovalWidth, i16 ovalHeight);
+void FillRoundRect(Rect *rect, i16 ovalWidth, i16 ovalHeight, u16 color);
+
 void WritePixel(i16 x, i16 y, u16 color);
