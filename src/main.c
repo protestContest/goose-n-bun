@@ -61,35 +61,120 @@ void Popup(void)
   i16 x = RandBetween(0, SCREEN_W - TextWidth(text) - 16);
   i16 y = RandBetween(0, SCREEN_H - TextHeight(text) - 16);
   TextWindow(text, x, y);
-  SetTimeout(20, Popup);
+  // SetTimeout(20, Popup);
+}
+
+typedef struct __attribute__((packed)) {
+  u8 header[8];
+  u16 x;
+  u16 y;
+  u16 width;
+  u16 height;
+  u8 depth;
+  u8 description;
+  u16 data[];
+} TGA;
+
+void ShowImage(TGA *image)
+{
+  // TGA *image = ResData(GetResource(name));
+  if (!image) return;
+
+  for (u32 i = 0; i < image->height; i++) {
+    for (u32 j = 0; j < image->width; j++) {
+      u16 pixel = image->data[i * image->width + j];
+      if (!(pixel & 0x8000)) continue;
+
+      WritePixel(image->x + j, image->y - image->height + i, pixel);
+    }
+  }
+}
+
+typedef struct {
+  u32 count;
+  u32 speed;
+  bool repeat;
+  u32 curFrame;
+  u32 nextAt;
+  TGA **frames;
+} Sprite;
+
+void PlaySprite(Sprite *sprite)
+{
+  u32 now = TickCount();
+  if (sprite->curFrame < sprite->count && sprite->nextAt <= now) {
+    sprite->nextAt = now + sprite->speed;
+
+    u32 lastIndex = sprite->curFrame == 0 ? sprite->count-1 : sprite->curFrame-1;
+    TGA *last = sprite->frames[lastIndex];
+    Rect r = {
+      last->x,
+      last->y - last->height,
+      last->x + last->width,
+      last->y
+    };
+    FillRect(&r, RGB(240, 192, 136));
+
+    ShowImage(sprite->frames[sprite->curFrame]);
+    sprite->curFrame++;
+    if (sprite->curFrame == sprite->count && sprite->repeat) sprite->curFrame = 0;
+  }
+}
+
+Sprite sprite;
+
+void Restart(void)
+{
+  sprite.curFrame = 0;
 }
 
 void main(void)
 {
   EnableDebug();
-
   OnInterrupt(INT_VBLANK, UpdateTime);
 
   GraphicsMode(3);
   ShowLayer(DISP_BG2);
-  ClearScreen(RGB(240, 192, 136));
   SetFont("Geneva");
 
-  // Rect r = {100, 50, 150, 100};
-  // // PenSize(3, 3);
-  // FrameRoundRect(&r, 8, 8);
+  ClearScreen(RGB(240, 192, 136));
 
-  Rect r = {100, 50, 140, 90};
-  FillArc(&r, 0, 360, BLACK);
+  OnKeyDown(BTN_A, Restart);
 
+  TGA *frames[] = {
+    ResData(GetResource("dice/1.tga")),
+    ResData(GetResource("dice/2.tga")),
+    ResData(GetResource("dice/3.tga")),
+    ResData(GetResource("dice/4.tga")),
+    ResData(GetResource("dice/5.tga")),
+    ResData(GetResource("dice/6.tga")),
+    ResData(GetResource("dice/7.tga")),
+    ResData(GetResource("dice/8.tga")),
+    ResData(GetResource("dice/9.tga")),
+    ResData(GetResource("dice/10.tga")),
+    ResData(GetResource("dice/11.tga")),
+    ResData(GetResource("dice/12.tga")),
+    ResData(GetResource("dice/13.tga")),
+    ResData(GetResource("dice/14.tga")),
+    ResData(GetResource("dice/15.tga")),
+    ResData(GetResource("dice/16.tga")),
+    ResData(GetResource("dice/17.tga")),
+    ResData(GetResource("dice/18.tga")),
+    ResData(GetResource("dice/19.tga")),
+    ResData(GetResource("dice/20.tga")),
+  };
 
-  // TestScreen();
-
-  // OnKeyDown(BTN_A, Popup);
+  sprite.count = ArrayCount(frames);
+  sprite.speed = 6;
+  sprite.repeat = false;
+  sprite.curFrame = 0;
+  sprite.nextAt = 0;
+  sprite.frames = frames;
 
   while (true) {
-    // VSync();
+    VSync();
+    PlaySprite(&sprite);
     // CheckTimeouts();
-    // GetInput();
+    GetInput();
   }
 }
