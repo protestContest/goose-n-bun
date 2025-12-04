@@ -1,7 +1,7 @@
 #pragma once
 
 typedef struct {
-  u32 obj;
+  u32 size;
   u32 baseTile;
   u32 numFrames;
   u32 speed;
@@ -28,6 +28,10 @@ void SetObjMode(u32 obj, u32 mode);
 void SetObjMosaic(u32 obj, bool enable);
 void SetObjColors(u32 obj, bool hicolor);
 
+#define ObjFlipH  0x1
+#define ObjFlipV  0x2
+void SetObjFlip(u32 obj, u32 flip);
+
 #define Obj8x8    0x0
 #define Obj16x16  0x4
 #define Obj32x32  0x8
@@ -48,5 +52,7 @@ void SetObjPalette(u32 obj, u32 palette);
 
 void SetTiles(u8 *pixels, u32 width);
 
-void InitSprite(AnimatedSprite *sprite, u32 obj, u32 size, u32 baseTile, u32 numFrames, u32 speed);
-void UpdateSprite(AnimatedSprite *sprite, u32 time);
+void InitSprite(AnimatedSprite *sprite, u32 size, u32 baseTile, u32 numFrames, u32 speed);
+void AssignSprite(u32 obj, AnimatedSprite *sprite);
+bool UpdateSprite(u32 obj);
+void UpdateSprites(void);

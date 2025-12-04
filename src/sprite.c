@@ -1,6 +1,7 @@
 #include "sprite.h"
 #include "hardware.h"
 #include "canvas.h"
+#include "time.h"
 
 void SetPalette(u32 n, u8 *colors, u32 numColors, u32 depth)
 {
@@ -56,6 +57,11 @@ void SetObjColors(u32 obj, bool hicolor)
   OAM[obj*4] = SetBit(OAM[obj*4], 13, hicolor);
 }
 
+void SetObjFlip(u32 obj, u32 flip)
+{
+  OAM[obj*4+1] = SetBits(OAM[obj*4+1], 0x3000, flip << 12);
+}
+
 void SetObjSize(u32 obj, u32 size)
 {
   OAM[obj*4] = SetBits(OAM[obj*4], 0xC000, size << 14);
@@ -93,23 +99,45 @@ void SetTiles(u8 *pixels, u32 width)
   }
 }
 
-void InitSprite(AnimatedSprite *sprite, u32 obj, u32 size, u32 baseTile, u32 numFrames, u32 speed)
+void InitSprite(AnimatedSprite *sprite, u32 size, u32 baseTile, u32 numFrames, u32 speed)
 {
-  sprite->obj = obj;
+  sprite->size = size;
   sprite->baseTile = baseTile;
   sprite->numFrames = numFrames;
   sprite->speed = speed;
   sprite->next = 0;
   sprite->frame = 0;
-  SetObjSize(obj, size);
-  SetObjSprite(obj, baseTile);
 }
 
-void UpdateSprite(AnimatedSprite *sprite, u32 time)
+static AnimatedSprite *objSprites[128] = {0};
+
+void AssignSprite(u32 obj, AnimatedSprite *sprite)
 {
-  if (time > sprite->next) {
-    sprite->next += sprite->speed;
+  SetObjSize(obj, sprite->size);
+  SetObjSprite(obj, sprite->baseTile);
+  objSprites[obj] = sprite;
+  sprite->next = TickCount() + sprite->speed;
+}
+
+bool UpdateSprite(u32 obj)
+{
+  if (!objSprites[obj]) return false;
+  u32 now = TickCount();
+  AnimatedSprite *sprite = objSprites[obj];
+
+  if (now > sprite->next) {
+    sprite->next = now + sprite->speed;
     sprite->frame = (sprite->frame+1) % sprite->numFrames;
-    SetObjSprite(sprite->obj, sprite->baseTile + 16*sprite->frame);
+    SetObjSprite(obj, sprite->baseTile + 16*sprite->frame);
+    return true;
+  }
+
+  return false;
+}
+
+void UpdateSprites(void)
+{
+  for (u32 i = 0; i < ArrayCount(objSprites); i++) {
+    UpdateSprite(i);
   }
 }

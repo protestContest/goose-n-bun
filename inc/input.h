@@ -10,9 +10,8 @@
 #define BTN_DOWN    (1 << 7)
 #define BTN_R       (1 << 8)
 #define BTN_L       (1 << 9)
+#define BTN_DPAD    (BTN_UP | BTN_DOWN | BTN_LEFT | BTN_RIGHT)
 
 void SleepUntil(u16 keys);
 void WaitForInput(void);
-void OnKeyDown(u16 keys, FnPtr handler);
-void OnKeyUp(u16 keys, FnPtr handler);
-void GetInput(void);
+u16 GetInput(void);

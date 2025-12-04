@@ -31,6 +31,7 @@ void Log(char *msg)
 void Error(char *msg)
 {
   ClearScreen(GRAY);
+  HideLayer(DISP_OBJ);
 
   TGA *stop = Uncompress(GetResource("stop.tga"), 0);
   ShowImage(stop, SCREEN_W/2 - stop->width/2, SCREEN_H/2 - stop->height/2);
