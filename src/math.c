@@ -72,9 +72,9 @@ u32 Random(void)
   return randSeed;
 }
 
-u32 RandBetween(u32 low, u32 high)
+u32 RandomBetween(u32 low, u32 high)
 {
-  if (high < low) return RandBetween(high, low);
+  if (high < low) return RandomBetween(high, low);
   u32 range = high - low;
   if (range == 0) return low;
 
