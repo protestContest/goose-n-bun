@@ -19,6 +19,19 @@ typedef struct {
   u16 color;
 } PenState;
 
+typedef struct __attribute__((packed)) {
+  u8 header[5];
+  u16 paletteSize;
+  u8 paletteDepth;
+  u16 x;
+  u16 y;
+  u16 width;
+  u16 height;
+  u8 depth;
+  u8 description;
+  u16 data[];
+} TGA;
+
 extern Rect screenRect;
 
 #define SCREEN_W 240
@@ -27,6 +40,9 @@ extern Rect screenRect;
 #define PixelAt(x, y)     VRAM[(x) + (y)*SCREEN_W]
 #define RGB(r, g, b) ((((r)>>3) & 0x1F) | ((((g)>>3) & 0x1F) << 5) | ((((b)>>3) & 0x1F) << 10))
 #define BLACK RGB(0, 0, 0)
+#define DK_GRAY RGB(63, 63, 63)
+#define GRAY RGB(127, 127, 127)
+#define LT_GRAY RGB(191, 191, 191)
 #define WHITE RGB(255, 255, 255)
 #define RED RGB(255, 0, 0)
 #define GREEN RGB(0, 255, 0)
@@ -54,3 +70,5 @@ void FrameRoundRect(Rect *rect, i16 ovalWidth, i16 ovalHeight);
 void FillRoundRect(Rect *rect, i16 ovalWidth, i16 ovalHeight, u16 color);
 
 void WritePixel(i16 x, i16 y, u16 color);
+
+void ShowImage(TGA *image, i16 x, i16 y);

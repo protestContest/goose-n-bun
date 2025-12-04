@@ -1,6 +1,6 @@
 #pragma once
 
-#define Assert(cond)  ((cond) || (Error(0),0))
+#define Assert(cond)  (void)((cond) || (Error("Assertion failed"),0))
 
 bool EnableDebug(void);
 void Log(char *msg);

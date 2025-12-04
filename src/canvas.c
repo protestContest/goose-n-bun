@@ -139,3 +139,18 @@ void WritePixel(i16 x, i16 y, u16 color)
 {
   PixelAt(x, y) = color;
 }
+
+void ShowImage(TGA *image, i16 x, i16 y)
+{
+  // TGA *image = ResData(GetResource(name));
+  if (!image) return;
+
+  for (u32 i = 0; i < image->height; i++) {
+    for (u32 j = 0; j < image->width; j++) {
+      u16 pixel = image->data[i * image->width + j];
+      if (!(pixel & 0x8000)) continue;
+      pixel = ((pixel & 0x1F) << 10) | (pixel & (0x1F << 5)) | ((pixel >> 10) & 0x1F);
+      WritePixel(x + j, y + i, pixel);
+    }
+  }
+}

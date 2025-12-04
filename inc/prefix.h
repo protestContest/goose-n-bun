@@ -30,3 +30,5 @@ typedef void (*FnPtr)(void);
 #define Min(a, b)         ((a) > (b) ? (b) : (a))
 #define Max(a, b)         ((a) > (b) ? (a) : (b))
 #define Align(n, m)       (((u32)(n) + (u32)(m) - 1) & ~((u32)(m) - 1))
+#define SetBit(w, b, n)   (((w) & ~(1 << (b))) | ((n) << (b)))
+#define SetBits(w, m, n)  (((w) & ~(m)) | ((n) & (m)))

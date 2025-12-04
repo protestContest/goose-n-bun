@@ -150,6 +150,8 @@ void EncodeItem(ResInfo *info)
     free(data);
     return;
   case SubFilter:
+    data = malloc(info->size);
+    fread(data, info->size, 1, f);
     Filter(data, info->size, info->compressionArg);
     info->data = data;
     return;

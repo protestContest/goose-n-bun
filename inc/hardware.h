@@ -14,21 +14,15 @@ extern void VBlankIntrWait(void);
 
 // LCD
 #define REG_DISPCNT     *((volatile u16*)0x04000000)
-#define GraphicsMode(n) do {\
-  REG_DISPCNT = (n) & 7;\
-} while (0)
-#define Flip() do {\
-  REG_DISPCNT = REG_DISPCNT ^ (1 << 4);\
-} while (0)
-#define HBlankFree(n) do {\
-  REG_DISPCNT = (REG_DISPCNT & ~(1 << 5)) | ((n) << 5);\
-} while (0)
-#define ObjVRAMMapMode(n) do {\
-  REG_DISPCNT = (REG_DISPCNT & ~(1 << 6)) | ((n) << 6);\
-} while (0)
-#define ForcedBlank(n) do {\
-  REG_DISPCNT = (REG_DISPCNT & ~(1 << 7)) | ((n) << 7);\
-} while (0)
+#define GraphicsMode(n) do {REG_DISPCNT = (n) & 7;} while (0)
+#define CurrentMode() (REG_DISPCNT & 7)
+#define Flip() do {REG_DISPCNT = REG_DISPCNT ^ (1 << 4);} while (0)
+#define HBlankFree(n) do {REG_DISPCNT = SetBit(REG_DISPCNT, 5, n);} while (0)
+
+#define ObjMap2D 0
+#define ObjMap1D 1
+#define ObjMapMode(n) do {REG_DISPCNT = SetBit(REG_DISPCNT, 6, n);} while (0)
+#define ForcedBlank(n) do {REG_DISPCNT = SetBit(REG_DISPCNT, 7, n);} while (0)
 #define DISP_BG0    (1 << 8)
 #define DISP_BG1    (1 << 9)
 #define DISP_BG2    (1 << 10)
@@ -37,15 +31,9 @@ extern void VBlankIntrWait(void);
 #define DISP_WIN1   (1 << 13)
 #define DISP_WIN2   (1 << 14)
 #define DISP_WINOBJ (1 << 15)
-#define ShowLayer(n) do {\
-  REG_DISPCNT |= (n);\
-} while (0)
-#define HideLayer(n) do {\
-  REG_DISPCNT &= ~(n);\
-} while (0)
-#define ScreenOff() do {\
-  REG_DISPCNT &= ~(0xFF00);\
-} while (0)
+#define ShowLayer(n) do {REG_DISPCNT |= (n);} while (0)
+#define HideLayer(n) do {REG_DISPCNT &= ~(n);} while (0)
+#define ScreenOff() do {REG_DISPCNT &= ~(0xFF00);} while (0)
 
 #define REG_DISPSTAT    *((volatile u16*)0x04000004)
 #define LCD_VBLANK_IRQ  (1 << 3)
@@ -199,3 +187,11 @@ extern void VBlankIntrWait(void);
 #define INT_DMA3        (1 << 11)
 #define INT_KEYPAD      (1 << 12)
 #define INT_GAMEPAK     (1 << 13)
+
+
+
+// Objects
+#define OAM             ((volatile u16*)0x07000000)
+#define CRAM            ((volatile u16*)0x06014000)
+#define BG_PALETTE      ((volatile u16*)0x05000000)
+#define OBJ_PALETTE     ((volatile u16*)0x05000200)

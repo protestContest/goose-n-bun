@@ -3,6 +3,7 @@
 #include "text.h"
 #include "mem.h"
 #include "str.h"
+#include "res.h"
 
 #define MGBA_LOG_FATAL 0
 #define MGBA_LOG_ERROR 1
@@ -29,16 +30,20 @@ void Log(char *msg)
 
 void Error(char *msg)
 {
-  SetColor(RED);
-  MoveTo(115, 75);
-  Line(10, 10);
-  MoveTo(115, 85);
-  Line(10, -10);
+  ClearScreen(GRAY);
+
+  TGA *stop = Uncompress(GetResource("stop.tga"), 0);
+  ShowImage(stop, SCREEN_W/2 - stop->width/2, SCREEN_H/2 - stop->height/2);
+
   if (msg) {
+    FontInfo info;
+    GetFontInfo(&info);
     u32 width = TextWidth(msg);
-    MoveTo(SCREEN_W/2 - width/2, 100);
+    u32 height = TextHeight(msg);
+    SetColor(WHITE);
+    MoveTo(SCREEN_W/2 - width/2, 3*SCREEN_H/4 - height/2 + info.ascent);
     Print(msg);
   }
 
-  while (1);
+  IntrWait(true, 0);
 }
