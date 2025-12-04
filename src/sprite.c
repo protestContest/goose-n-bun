@@ -57,9 +57,14 @@ void SetObjColors(u32 obj, bool hicolor)
   OAM[obj*4] = SetBit(OAM[obj*4], 13, hicolor);
 }
 
-void SetObjFlip(u32 obj, u32 flip)
+void SetObjFlipH(u32 obj, bool flip)
 {
-  OAM[obj*4+1] = SetBits(OAM[obj*4+1], 0x3000, flip << 12);
+  OAM[obj*4+1] = SetBits(OAM[obj*4+1], 0x1000, flip << 12);
+}
+
+void SetObjFlipV(u32 obj, bool flip)
+{
+  OAM[obj*4+1] = SetBits(OAM[obj*4+1], 0x2000, flip << 13);
 }
 
 void SetObjSize(u32 obj, u32 size)
@@ -119,6 +124,33 @@ void AssignSprite(u32 obj, AnimatedSprite *sprite)
   sprite->next = TickCount() + sprite->speed;
 }
 
+static u32 NumTiles(u32 size)
+{
+  switch (size) {
+  case Obj8x8:
+    return 1;
+  case Obj16x16:
+  case Obj32x8:
+  case Obj8x32:
+    return 4;
+  case Obj32x32:
+    return 16;
+  case Obj64x64:
+    return 64;
+  case Obj16x8:
+  case Obj8x16:
+    return 2;
+  case Obj32x16:
+  case Obj16x32:
+    return 8;
+  case Obj64x32:
+  case Obj32x64:
+    return 32;
+  default:
+    return 0;
+  }
+}
+
 bool UpdateSprite(u32 obj)
 {
   if (!objSprites[obj]) return false;
@@ -128,7 +160,7 @@ bool UpdateSprite(u32 obj)
   if (now > sprite->next) {
     sprite->next = now + sprite->speed;
     sprite->frame = (sprite->frame+1) % sprite->numFrames;
-    SetObjSprite(obj, sprite->baseTile + 16*sprite->frame);
+    SetObjSprite(obj, sprite->baseTile + NumTiles(sprite->size)*sprite->frame);
     return true;
   }
 

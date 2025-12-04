@@ -28,9 +28,8 @@ void SetObjMode(u32 obj, u32 mode);
 void SetObjMosaic(u32 obj, bool enable);
 void SetObjColors(u32 obj, bool hicolor);
 
-#define ObjFlipH  0x1
-#define ObjFlipV  0x2
-void SetObjFlip(u32 obj, u32 flip);
+void SetObjFlipH(u32 obj, bool flip);
+void SetObjFlipV(u32 obj, bool flip);
 
 #define Obj8x8    0x0
 #define Obj16x16  0x4

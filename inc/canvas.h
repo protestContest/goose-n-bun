@@ -62,6 +62,9 @@ void SetRect(Rect *rect, i16 left, i16 top, i16 right, i16 bottom);
 void FillRect(Rect *rect, u16 color);
 void FrameRect(Rect *rect);
 
+void SectRect(Rect *rect, Rect *obj);
+void OffsetRect(Rect *rect, i16 x, i16 y);
+
 i16 PtToAngle(Rect *r, Point pt);
 void FrameArc(Rect *rect, i16 startAngle, i16 arcAngle);
 void FillArc(Rect *rect, i16 startAngle, i16 arcAngle, u16 color);

@@ -114,6 +114,22 @@ void FrameRect(Rect *rect)
   LineTo(rect->left, rect->top);
 }
 
+void SectRect(Rect *rect, Rect *obj)
+{
+  rect->left = Max(rect->left, obj->left);
+  rect->right = Min(rect->right, obj->right);
+  rect->top = Max(rect->top, obj->top);
+  rect->bottom = Min(rect->bottom, obj->bottom);
+}
+
+void OffsetRect(Rect *rect, i16 x, i16 y)
+{
+  rect->left += x;
+  rect->right += x;
+  rect->top += y;
+  rect->bottom += y;
+}
+
 i16 PtToAngle(Rect *r, Point pt)
 {
   return 0;
