@@ -130,6 +130,11 @@ void OffsetRect(Rect *rect, i16 x, i16 y)
   rect->bottom += y;
 }
 
+bool PtInRect(Rect *rect, Point p)
+{
+  return p.h >= rect->left && p.h < rect->right && p.v >= rect->top && p.v < rect->bottom;
+}
+
 i16 PtToAngle(Rect *r, Point pt)
 {
   return 0;

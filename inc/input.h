@@ -11,6 +11,7 @@
 #define BTN_R       (1 << 8)
 #define BTN_L       (1 << 9)
 #define BTN_DPAD    (BTN_UP | BTN_DOWN | BTN_LEFT | BTN_RIGHT)
+#define BTN_ANY     0x03FF
 
 void SleepUntil(u16 keys);
 void WaitForInput(void);
