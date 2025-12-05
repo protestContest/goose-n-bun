@@ -16,5 +16,5 @@ void SleepUntil(u16 keys);
 void WaitForInput(void);
 u16 GetInput(void);
 
-#define KeyPressed(prev, cur, btn)  (((prev)^(cur))&(cur)&(btn))
-#define KeyReleased(prev, cur, btn) (((prev)^(cur))&(prev)&(btn))
+bool KeyPressed(u16 btn);
+bool KeyReleased(u16 btn);

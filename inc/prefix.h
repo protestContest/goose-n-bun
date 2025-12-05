@@ -29,6 +29,7 @@ typedef void (*FnPtr)(void);
 #define ArrayCount(a)     (sizeof(a) / sizeof(a)[0])
 #define Min(a, b)         ((a) > (b) ? (b) : (a))
 #define Max(a, b)         ((a) > (b) ? (a) : (b))
+#define Abs(a)            ((a) < 0 ? -(a) : (a))
 #define Align(n, m)       (((u32)(n) + (u32)(m) - 1) & ~((u32)(m) - 1))
 #define SetBit(w, b, n)   (((w) & ~(1 << (b))) | ((n) << (b)))
 #define SetBits(w, m, n)  (((w) & ~(m)) | ((n) & (m)))

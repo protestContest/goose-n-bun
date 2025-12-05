@@ -18,6 +18,7 @@ typedef struct Character {
   i16 x;
   i16 y;
   Rect box;
+  Point spriteOffset;
   u16 state;
   u16 numStates;
   AnimatedSprite *sprites;
@@ -29,7 +30,7 @@ void PlaceCharacter(Character *ch, i16 x, i16 y)
 {
   ch->x = x;
   ch->y = y;
-  PlaceObj(ch->obj, ch->x - ch->box.left, ch->y - ch->box.top);
+  PlaceObj(ch->obj, ch->x + ch->spriteOffset.h, ch->y + ch->spriteOffset.v);
 }
 
 void SetCharacterState(Character *ch, u16 targetState)
@@ -38,6 +39,56 @@ void SetCharacterState(Character *ch, u16 targetState)
     ch->state = targetState;
     AssignSprite(ch->obj, &ch->sprites[ch->state]);
   }
+}
+
+bool UpdateCharacterMovement(Character *ch, u16 input, i16 speed)
+{
+  bool changed = UpdateSprite(ch->obj);
+  bool moved = false;
+
+  if (input & BTN_DPAD) {
+    i16 speedX = speed;
+    if (input & BTN_LEFT) {
+      speedX = Min(ch->x+ch->box.left, speedX);
+      if (speedX > 0) {
+        if (changed) {
+          ch->x -= speedX;
+        }
+        moved = true;
+      }
+    } else if (input & BTN_RIGHT) {
+      speedX = Min(SCREEN_W-ch->x-ch->box.right, speedX);
+      if (speedX > 0) {
+        if (changed) {
+          ch->x += speedX;
+        }
+        moved = true;
+      }
+    }
+
+    i16 speedY = speed;
+    if (input & BTN_UP) {
+      speedY = Min(ch->y+ch->box.top, speedY);
+      if (speedY > 0) {
+        if (changed) {
+          ch->y -= speedY;
+        }
+        moved = true;
+      }
+    } else if (input & BTN_DOWN) {
+      speedY = Min(SCREEN_H-ch->y-ch->box.bottom, speedY);
+      if (speedY > 0) {
+        if (changed) {
+          ch->y += speedY;
+        }
+        moved = true;
+      }
+    }
+
+    PlaceCharacter(ch, ch->x, ch->y);
+  }
+
+  return moved;
 }
 
 void UpdateCharacter(Character *ch, u16 input)
@@ -49,69 +100,31 @@ enum {bunIdle, bunHop, bunHopVert};
 
 void UpdateBun(Character *ch, u16 input)
 {
-  bool changed = UpdateSprite(ch->obj);
+  bool moved = UpdateCharacterMovement(ch, input, 4);
 
-  if (input & BTN_DPAD) {
-    u32 targetState = (input & (BTN_LEFT | BTN_RIGHT)) ? bunHop : bunHopVert;
-
-    if (changed || ch->state != targetState) {
-      bool moved = false;
-
-      i16 speed = 4;
-      if (input & BTN_LEFT) {
-        speed = Min(ch->x, speed);
-        if (speed > 0) {
-          ch->x -= speed;
-          moved = true;
-        }
-      } else if (input & BTN_RIGHT) {
-        speed = Min(SCREEN_W-ch->x-(ch->box.right - ch->box.left), speed);
-        if (speed > 0) {
-          ch->x += speed;
-          moved = true;
-        }
-      }
-
-      speed = 3;
-      if (input & BTN_UP) {
-        speed = Min(ch->y, speed);
-        if (speed > 0) {
-          ch->y -= speed;
-          moved = true;
-        }
-      } else if (input & BTN_DOWN) {
-        speed = Min(SCREEN_H-ch->y-(ch->box.bottom - ch->box.top), speed);
-        if (speed > 0) {
-          ch->y += speed;
-          moved = true;
-        }
-      }
-
-      if (!moved) {
-        targetState = bunIdle;
-      }
-
-      PlaceCharacter(ch, ch->x, ch->y);
+  u32 targetState = bunIdle;
+  if (moved) {
+    if (input & (BTN_LEFT | BTN_RIGHT)) {
+      targetState = bunHop;
+    } else {
+      targetState = bunHopVert;
     }
-
-    SetCharacterState(ch, targetState);
-
-    if (input & BTN_DOWN) {
-      SetObjFlipV(ch->obj, true);
-    } else if (input & BTN_UP) {
-      SetObjFlipV(ch->obj, false);
-    }
-    if (input & BTN_RIGHT) {
-      SetObjFlipH(ch->obj, true);
-      SetObjFlipV(ch->obj, false);
-    } else if (input & BTN_LEFT) {
-      SetObjFlipH(ch->obj, false);
-      SetObjFlipV(ch->obj, false);
-    }
-  } else {
-    SetObjFlipV(ch->obj, false);
-    SetCharacterState(ch, bunIdle);
   }
+
+  if (input & BTN_DOWN) {
+    SetObjFlipV(ch->obj, true);
+  } else if (input & BTN_UP) {
+    SetObjFlipV(ch->obj, false);
+  }
+  if (input & BTN_RIGHT) {
+    SetObjFlipH(ch->obj, true);
+  } else if (input & BTN_LEFT) {
+    SetObjFlipH(ch->obj, false);
+  }
+  if (ch->state != bunHopVert) {
+    SetObjFlipV(ch->obj, false);
+  }
+  SetCharacterState(ch, targetState);
 }
 
 void InitBun(Character *bun, u32 obj)
@@ -119,10 +132,12 @@ void InitBun(Character *bun, u32 obj)
   bun->x = RandomBetween(10, SCREEN_W - 26);
   bun->y = RandomBetween(10, SCREEN_H - 26);
   bun->obj = obj;
-  bun->box.left = 0;
-  bun->box.top = 0;
-  bun->box.right = 16;
-  bun->box.bottom = 16;
+  bun->box.left = -5;
+  bun->box.top = -5;
+  bun->box.right = 5;
+  bun->box.bottom = 0;
+  bun->spriteOffset.h = -8;
+  bun->spriteOffset.v = -16;
   bun->state = 0;
   bun->numStates = 3;
   bun->sprites = Alloc(sizeof(AnimatedSprite)*3);
@@ -140,61 +155,25 @@ enum {gooseIdle, gooseFlap, gooseRun, gooseWalk};
 
 void UpdateGoose(Character *ch, u16 input)
 {
-  bool changed = UpdateSprite(ch->obj);
+  i16 speed = (ch->state == gooseRun) ? 5 : 3;
+  bool moved = UpdateCharacterMovement(ch, input, speed);
 
-  if (input & BTN_DPAD) {
-    u32 targetState = (input & BTN_B) ? gooseRun : gooseWalk;
-
-    if (changed || ch->state != targetState) {
-      bool moved = false;
-
-      i16 speed = (ch->state == gooseWalk) ? 3 : 5;
-      if (input & BTN_LEFT) {
-        speed = Min(ch->x, speed);
-        if (speed > 0) {
-          ch->x -= speed;
-          moved = true;
-        }
-      } else if (input & BTN_RIGHT) {
-        speed = Min(SCREEN_W-ch->x-(ch->box.right - ch->box.left), speed);
-        if (speed > 0) {
-          ch->x += speed;
-          moved = true;
-        }
-      }
-
-      speed = (ch->state == gooseWalk) ? 2 : 3;
-      if (input & BTN_UP) {
-        speed = Min(ch->y, speed);
-        if (speed > 0) {
-          ch->y -= speed;
-          moved = true;
-        }
-      } else if (input & BTN_DOWN) {
-        speed = Min(SCREEN_H-ch->y-(ch->box.bottom - ch->box.top), speed);
-        if (speed > 0) {
-          ch->y += speed;
-          moved = true;
-        }
-      }
-
-      if (!moved) {
-        targetState = gooseFlap;
-      }
-
-      PlaceCharacter(ch, ch->x, ch->y);
+  if (moved) {
+    if (input & BTN_B) {
+      SetCharacterState(ch, gooseRun);
+    } else {
+      SetCharacterState(ch, gooseWalk);
     }
-
-    SetCharacterState(ch, targetState);
-
-    if (input & BTN_LEFT) {
-      SetObjFlipH(ch->obj, true);
-    } else if (input & BTN_RIGHT) {
-      SetObjFlipH(ch->obj, false);
-    }
+  } else if (input & BTN_A) {
+    SetCharacterState(ch, gooseFlap);
   } else {
-    u32 targetState = (input & BTN_A) ? gooseFlap : gooseIdle;
-    SetCharacterState(ch, targetState);
+    SetCharacterState(ch, gooseIdle);
+  }
+
+  if (input & BTN_LEFT) {
+    SetObjFlipH(ch->obj, true);
+  } else if (input & BTN_RIGHT) {
+    SetObjFlipH(ch->obj, false);
   }
 }
 
@@ -202,13 +181,15 @@ static AnimatedSprite gooseSprites[4];
 
 void InitGoose(Character *goose, u32 obj)
 {
-  goose->x = RandomBetween(10, SCREEN_W - 26);
-  goose->y = RandomBetween(10, SCREEN_H - 26);
+  goose->x = SCREEN_W/2;
+  goose->y = SCREEN_H/2;
   goose->obj = obj;
-  goose->box.left = 0;
-  goose->box.top = 0;
-  goose->box.right = 16;
-  goose->box.bottom = 16;
+  goose->box.left = -5;
+  goose->box.top = -5;
+  goose->box.right = 5;
+  goose->box.bottom = 0;
+  goose->spriteOffset.h = -16;
+  goose->spriteOffset.v = -32;
   goose->state = 0;
   goose->numStates = 1;
   goose->sprites = gooseSprites;
@@ -218,10 +199,61 @@ void InitGoose(Character *goose, u32 obj)
   PlaceCharacter(goose, goose->x, goose->y);
 }
 
-u16 BunAI(Character *bun)
+u16 BunAI(Character *bun, Character *goose)
 {
+  if (goose->state == gooseFlap || goose->state == gooseRun) {
+    i16 tooClose = 30;
+    i16 dx = goose->x - bun->x;
+    i16 dy = goose->y - bun->y;
+    if (Sqrt(dx*dx + dy*dy) < tooClose) {
+      if (dy > 2*Abs(dx)) {
+        bun->action = BTN_UP;
+      } else if (dy < -2*Abs(dx)) {
+        bun->action = BTN_DOWN;
+      } else if (dx > 2*Abs(dy)) {
+        bun->action = BTN_LEFT;
+      } else if (dx < -2*Abs(dy)) {
+        bun->action = BTN_RIGHT;
+      } else if (dx > 0 && dy > 0) {
+        bun->action = BTN_LEFT | BTN_UP;
+      } else if (dx > 0 && dy < 0) {
+        bun->action = BTN_LEFT | BTN_DOWN;
+      } else if (dx < 0 && dy > 0) {
+        bun->action = BTN_RIGHT | BTN_UP;
+      } else if (dx < 0 && dy < 0) {
+        bun->action = BTN_RIGHT | BTN_DOWN;
+      }
+
+      if (bun->x + bun->box.right >= SCREEN_W - 4 ||
+          bun->x + bun->box.left <= 4) {
+        if (dy > 0) {
+          bun->action |= BTN_UP;
+        } else {
+          bun->action |= BTN_DOWN;
+        }
+      } else if (bun->y + bun->box.bottom >= SCREEN_H - 4 ||
+          bun->y + bun->box.top <= 4) {
+        if (dx > 0) {
+          bun->action |= BTN_LEFT;
+        } else {
+          bun->action |= BTN_RIGHT;
+        }
+      }
+
+      return bun->action;
+    }
+  }
+
   if (bun->state == bunIdle) {
-    if (RandomBetween(0, 1000) < 5) {
+    if (bun->x + bun->box.right == SCREEN_W) {
+      bun->action = BTN_LEFT;
+    } else if (bun->x + bun->box.left == 0) {
+      bun->action = BTN_RIGHT;
+    } else if (bun->y + bun->box.bottom == SCREEN_H) {
+      bun->action = BTN_UP;
+    } else if (bun->y + bun->box.top == 0) {
+      bun->action = BTN_DOWN;
+    } else if (RandomBetween(0, 1000) < 5) {
       switch (RandomBetween(0, 8)) {
       case 0:
         bun->action = BTN_LEFT;
@@ -268,47 +300,45 @@ void main(void)
   ObjMapMode(ObjMap1D);
 
   SetFont("Geneva");
-  ClearScreen(GRAY);
 
-  TGA *tga = ResData(GetResource("sprites.tga"));
-  u8 *colors = (u8*)tga->data;
-  u8 *pixels = ((u8*)tga->data) + tga->paletteSize*tga->paletteDepth/8;
-  SetTiles(pixels, tga->width);
-  SetPalette(0, colors, tga->paletteSize, tga->paletteDepth);
+  TGA *grass = ResData(GetResource("grass.tga"));
+  ShowImage(grass, 0, 0);
+
+  TGA *tiles = ResData(GetResource("sprites.tga"));
+  u8 *colors = (u8*)tiles->data;
+  SetTiles(tiles);
+  SetPalette(0, colors, tiles->paletteSize, tiles->paletteDepth);
 
   InitSprite(&gooseSprites[gooseIdle], Obj32x32, 512, 2, 20);
   InitSprite(&gooseSprites[gooseFlap], Obj32x32, 512+16*2, 4, 10);
   InitSprite(&gooseSprites[gooseRun], Obj32x32, 512+16*6, 4, 4);
   InitSprite(&gooseSprites[gooseWalk], Obj32x32, 512+16*10, 4, 8);
 
-  Character chars[12];
-  InitGoose(&chars[0], 0);
-  for (u32 i = 1; i < ArrayCount(chars); i++) {
-    InitBun(&chars[i], i);
+  Character goose;
+  InitGoose(&goose, 0);
+
+  Character buns[127];
+  u32 numBuns = 3;
+
+  for (u32 i = 0; i < numBuns; i++) {
+    InitBun(&buns[i], i+1);
   }
-
-  u32 curChar = 0;
-
-  u16 lastInput = GetInput();
 
   while (true) {
     VSync();
 
     u16 input = GetInput();
-    if (KeyPressed(lastInput, input, BTN_L)) {
-      curChar = (curChar == 0) ? ArrayCount(chars)-1 : curChar - 1;
-    } else if (KeyPressed(lastInput, input, BTN_R)) {
-      curChar = (curChar + 1) % ArrayCount(chars);
-    }
 
-    for (u32 i = 0; i < ArrayCount(chars); i++) {
-      if (i == curChar) {
-        UpdateCharacter(&chars[i], input);
-      } else {
-        UpdateCharacter(&chars[i], BunAI(&chars[i]));
+    UpdateCharacter(&goose, input);
+
+    for (u32 i = 0; i < numBuns; i++) {
+      UpdateCharacter(&buns[i], BunAI(&buns[i], &goose));
+
+      if (numBuns < ArrayCount(buns) && buns[i].state == bunIdle && RandomBetween(0, 1000) < 1) {
+        numBuns++;
+        InitBun(&buns[numBuns-1], numBuns);
+        PlaceCharacter(&buns[numBuns-1], buns[i].x, buns[i].y);
       }
     }
-
-    lastInput = input;
   }
 }

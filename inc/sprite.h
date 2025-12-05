@@ -1,4 +1,5 @@
 #pragma once
+#include "canvas.h"
 
 typedef struct {
   u32 size;
@@ -49,7 +50,7 @@ void SetObjSprite(u32 obj, u32 tile);
 void SetObjPriority(u32 obj, u32 priority);
 void SetObjPalette(u32 obj, u32 palette);
 
-void SetTiles(u8 *pixels, u32 width);
+void SetTiles(TGA *tga);
 
 void InitSprite(AnimatedSprite *sprite, u32 size, u32 baseTile, u32 numFrames, u32 speed);
 void AssignSprite(u32 obj, AnimatedSprite *sprite);

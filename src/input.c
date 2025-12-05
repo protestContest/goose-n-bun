@@ -22,9 +22,21 @@ void WaitForInput(void)
 }
 
 static u16 keys = 0;
+static u16 lastKeys = 0;
 
 u16 GetInput(void)
 {
+  lastKeys = keys;
   keys = ~REG_KEYINPUT;
   return keys;
+}
+
+bool KeyPressed(u16 btn)
+{
+  return (lastKeys ^ keys) & keys & btn;
+}
+
+bool KeyReleased(u16 btn)
+{
+  return (lastKeys ^ keys) & lastKeys & btn;
 }

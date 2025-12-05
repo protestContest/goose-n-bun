@@ -88,8 +88,11 @@ void SetObjPalette(u32 obj, u32 palette)
   OAM[obj*4+2] = SetBits(OAM[obj*4+2], 0xF000, palette << 12);
 }
 
-void SetTiles(u8 *pixels, u32 width)
+void SetTiles(TGA *tga)
 {
+  u8 *pixels = ((u8*)tga->data) + tga->paletteSize*tga->paletteDepth/8;
+  u32 width = tga->width;
+
   u32 *tileWords = (u32*)CRAM;
   for (u32 tile = 0; tile < 32*16; tile++) {
     for (u32 tileRow = 0; tileRow < 8; tileRow++) {

@@ -158,7 +158,6 @@ void WritePixel(i16 x, i16 y, u16 color)
 
 void ShowImage(TGA *image, i16 x, i16 y)
 {
-  // TGA *image = ResData(GetResource(name));
   if (!image) return;
 
   for (u32 i = 0; i < image->height; i++) {
