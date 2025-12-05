@@ -18,6 +18,8 @@ void SleepUntil(u16 keys)
 
 void WaitForInput(void)
 {
+  REG_KEYCNT = BTN_ANY | 0x4000;
+  OnInterrupt(INT_KEYPAD, Wake);
   IntrWait(true, INT_KEYPAD);
 }
 

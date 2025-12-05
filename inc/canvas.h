@@ -64,6 +64,7 @@ void FrameRect(Rect *rect);
 
 void SectRect(Rect *rect, Rect *obj);
 void OffsetRect(Rect *rect, i16 x, i16 y);
+bool PtInRect(Rect *rect, Point p);
 
 i16 PtToAngle(Rect *r, Point pt);
 void FrameArc(Rect *rect, i16 startAngle, i16 arcAngle);
