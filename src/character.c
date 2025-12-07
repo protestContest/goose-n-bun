@@ -8,12 +8,9 @@ void PlaceCharacter(Character *ch, i16 x, i16 y)
   PlaceObj(ch->obj, ch->pos.h + ch->spriteOffset.h, ch->pos.v + ch->spriteOffset.v);
 }
 
-void SetCharacterState(Character *ch, u16 targetState)
+void SetCharacterSprite(Character *ch, u16 sprite)
 {
-  if (ch->state != targetState) {
-    ch->state = targetState;
-    AssignSprite(ch->obj, &ch->sprites[ch->state]);
-  }
+  AssignSprite(ch->obj, &ch->sprites[sprite]);
 }
 
 bool UpdateCharacterMovement(Character *ch, u16 input, i16 speed)
@@ -22,6 +19,28 @@ bool UpdateCharacterMovement(Character *ch, u16 input, i16 speed)
   bool moved = false;
 
   if (input & BTN_DPAD) {
+    if (input & BTN_LEFT) {
+      if (input & BTN_UP) {
+        ch->direction = leftUp;
+      } else if (input & BTN_DOWN) {
+        ch->direction = leftDown;
+      } else {
+        ch->direction = left;
+      }
+    } else if (input & BTN_RIGHT) {
+      if (ch->direction & BTN_UP) {
+        ch->direction = rightUp;
+      } else if (ch->direction & BTN_DOWN) {
+        ch->direction = rightDown;
+      } else {
+        ch->direction = right;
+      }
+    } else if (input & BTN_UP) {
+      ch->direction = up;
+    } else if (input & BTN_DOWN) {
+      ch->direction = down;
+    }
+
     i16 speedX = speed;
     if (input & BTN_LEFT) {
       speedX = Min(ch->pos.h+ch->box.left, speedX);

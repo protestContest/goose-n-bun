@@ -10,18 +10,20 @@
 #include "ui.h"
 #include "text.h"
 #include "str.h"
+#include "mem.h"
 
 Character buns[126];
 Character goose;
 Rect holeRect;
+TGA *grass;
 
 bool Round(u32 numBuns)
 {
-  holeRect.left = RandomBetween(0, SCREEN_W - 18);
-  holeRect.top = RandomBetween(0, SCREEN_H - 10);
-  holeRect.right = holeRect.left + 18;
-  holeRect.bottom = holeRect.top + 10;
-  PlaceObj(127, holeRect.left - 7, holeRect.top - 4);
+  holeRect.left = RandomBetween(0, SCREEN_W - 16);
+  holeRect.top = RandomBetween(0, SCREEN_H - 11);
+  holeRect.right = holeRect.left + 16;
+  holeRect.bottom = holeRect.top + 11;
+  PlaceObj(127, holeRect.left - 8, holeRect.top - 4);
 
   for (u32 i = 0; i < numBuns; i++) {
     InitBun(&buns[i], i+1);
@@ -31,6 +33,8 @@ bool Round(u32 numBuns)
   }
 
   bool paused = false;
+
+  ShowLayer(DISP_OBJ);
 
   while (numBuns > 0) {
     VSync();
@@ -83,22 +87,30 @@ bool Round(u32 numBuns)
 void Game(void)
 {
   InitGoose(&goose, 0);
-  ShowLayer(DISP_OBJ);
 
-  u32 levels[] = {1, 3, 5, 8, 13};
+  u32 levels[] = {1, 3, 5, 8, 13, 21, 34, 55};
   u32 curLevel = 0;
+  char levelStr[16] = {0};
+  Copy("Level 0", levelStr, 6);
+  u32 levelStrWidth = TextWidth(levelStr);
 
   while (true) {
-    if (!Round(levels[curLevel])) {
+    NumToString(curLevel+1, levelStr+6);
+    ShowImage(grass, 0, 0);
+    SetFont("Venice");
+    MoveTo(SCREEN_W/2-levelStrWidth/2, SCREEN_H - 4);
+    SetColor(WHITE);
+    Print(levelStr);
+
+    u32 numBuns = curLevel < ArrayCount(levels) ? levels[curLevel] : levels[ArrayCount(levels)-1];
+    if (!Round(numBuns)) {
       HideLayer(DISP_OBJ);
       Alert("You lose ");
       WaitForInput();
       break;
     }
-    curLevel = Min(curLevel+1, ArrayCount(levels)+1);
+    curLevel++;
   }
-
-  HideLayer(DISP_OBJ);
 }
 
 void main(void)
@@ -112,7 +124,7 @@ void main(void)
 
   SetFont("Geneva");
 
-  TGA *grass = ResData(GetResource("grass.tga"));
+  grass = ResData(GetResource("grass.tga"));
   ShowImage(grass, 0, 0);
 
   TGA *tiles = ResData(GetResource("sprites.tga"));
@@ -120,8 +132,9 @@ void main(void)
   SetTiles(tiles);
   SetPalette(0, colors, tiles->paletteSize, tiles->paletteDepth);
 
+  SpriteFrame holeFrame = {776, 0, 0};
   AnimatedSprite hole;
-  InitSprite(&hole, Obj32x16, 776, 1, 0);
+  InitSprite(&hole, Obj32x16, 0, 1, &holeFrame);
   AssignSprite(127, &hole);
 
   while (true) {
@@ -143,7 +156,6 @@ void main(void)
     }
 
     SeedRandom(TickCount());
-    ShowImage(grass, 0, 0);
     Game();
   }
 }

@@ -2,12 +2,18 @@
 #include "canvas.h"
 
 typedef struct {
+  u16 baseTile;
+  i16 dirX;
+  i16 dirY;
+} SpriteFrame;
+
+typedef struct {
   u32 size;
-  u32 baseTile;
   u32 numFrames;
   u32 speed;
   u32 next;
-  u32 frame;
+  u32 curFrame;
+  SpriteFrame *frames;
 } AnimatedSprite;
 
 void SetPalette(u32 n, u8 *colors, u32 numColors, u32 depth);
@@ -52,7 +58,7 @@ void SetObjPalette(u32 obj, u32 palette);
 
 void SetTiles(TGA *tga);
 
-void InitSprite(AnimatedSprite *sprite, u32 size, u32 baseTile, u32 numFrames, u32 speed);
+void InitSprite(AnimatedSprite *sprite, u32 size, u32 speed, u32 numFrames, SpriteFrame *frames);
 void AssignSprite(u32 obj, AnimatedSprite *sprite);
 bool UpdateSprite(u32 obj);
 void UpdateSprites(void);

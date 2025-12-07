@@ -1,7 +1,7 @@
 #pragma once
 #include "character.h"
 
-enum {bunIdle, bunHop, bunHopVert};
+enum {bunIdle, bunHop, bunHopUp, bunHopDown};
 
 void InitBun(Character *bun, u32 obj);
 void DestroyBun(Character *bun);

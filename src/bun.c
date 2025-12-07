@@ -4,6 +4,29 @@
 #include "input.h"
 #include "goose.h"
 
+static SpriteFrame bunIdleFrames[] = {
+  {736,0,-1},
+  {740,0,-1}
+};
+static SpriteFrame bunHopFrames[] = {
+  {744,0,-1},
+  {748,0,-1},
+  {752,0,-1},
+  {756,0,-1},
+};
+static SpriteFrame bunHopUpFrames[] = {
+  {760,0,-1},
+  {764,0,-1},
+  {768,0,-1},
+  {772,0,-1},
+};
+static SpriteFrame bunHopDownFrames[] = {
+  {760,0,1},
+  {764,0,1},
+  {768,0,1},
+  {772,0,1},
+};
+
 void InitBun(Character *bun, u32 obj)
 {
   bun->pos.h = RandomBetween(10, SCREEN_W - 26);
@@ -16,11 +39,11 @@ void InitBun(Character *bun, u32 obj)
   bun->spriteOffset.h = -8;
   bun->spriteOffset.v = -16;
   bun->state = 0;
-  bun->numStates = 3;
-  bun->sprites = Alloc(sizeof(AnimatedSprite)*3);
-  InitSprite(&bun->sprites[bunIdle], Obj16x16, 736, 2, 18);
-  InitSprite(&bun->sprites[bunHop], Obj16x16, 744, 4, 8);
-  InitSprite(&bun->sprites[bunHopVert], Obj16x16, 760, 4, 8);
+  bun->sprites = Alloc(sizeof(AnimatedSprite)*4);
+  InitSprite(&bun->sprites[bunIdle], Obj16x16, 18, ArrayCount(bunIdleFrames), bunIdleFrames);
+  InitSprite(&bun->sprites[bunHop], Obj16x16, 8, ArrayCount(bunHopFrames), bunHopFrames);
+  InitSprite(&bun->sprites[bunHopUp], Obj16x16, 8, ArrayCount(bunHopUpFrames), bunHopUpFrames);
+  InitSprite(&bun->sprites[bunHopDown], Obj16x16, 8, ArrayCount(bunHopDownFrames), bunHopDownFrames);
 
   bun->action = 0;
   bun->update = UpdateBun;
@@ -40,29 +63,25 @@ void UpdateBun(Character *ch, u16 input)
 {
   bool moved = UpdateCharacterMovement(ch, input, 4);
 
-  u32 targetState = bunIdle;
   if (moved) {
     if (input & (BTN_LEFT | BTN_RIGHT)) {
-      targetState = bunHop;
+      ch->state = bunHop;
+    } else if (input & BTN_UP) {
+      ch->state = bunHopUp;
     } else {
-      targetState = bunHopVert;
+      ch->state = bunHopDown;
     }
+  } else {
+    ch->state = bunIdle;
   }
 
-  if (input & BTN_DOWN) {
-    SetObjFlipV(ch->obj, true);
-  } else if (input & BTN_UP) {
-    SetObjFlipV(ch->obj, false);
-  }
   if (input & BTN_RIGHT) {
     SetObjFlipH(ch->obj, true);
   } else if (input & BTN_LEFT) {
     SetObjFlipH(ch->obj, false);
   }
-  if (ch->state != bunHopVert) {
-    SetObjFlipV(ch->obj, false);
-  }
-  SetCharacterState(ch, targetState);
+
+  SetCharacterSprite(ch, ch->state);
 }
 
 u16 TurnLeft(u16 keys)
@@ -152,10 +171,11 @@ u16 BunAI(Character *bun, Character *goose)
         } else {
           bun->action |= BTN_RIGHT;
         }
-      } else if (RandomBetween(0, 100) < 6) {
-        if (bun->obj & 1) {
+      } else {
+        u32 r = RandomBetween(0, 1000);
+        if (r < 20) {
           bun->action = TurnLeft(bun->action & BTN_DPAD);
-        } else {
+        } else if (r < 40) {
           bun->action = TurnRight(bun->action & BTN_DPAD);
         }
       }
@@ -204,16 +224,14 @@ u16 BunAI(Character *bun, Character *goose)
       bun->action = 0;
     }
   } else {
-    u32 r = RandomBetween(0, 100);
-    if (r < 2) {
-      bun->action = 0;
-    } else if (r < 6) {
-      if (bun->obj & 1) {
+      u32 r = RandomBetween(0, 1000);
+      if (r < 10) {
+        bun->action = 0;
+      } else if (r < 20) {
         bun->action = TurnLeft(bun->action & BTN_DPAD);
-      } else {
+      } else if (r < 30) {
         bun->action = TurnRight(bun->action & BTN_DPAD);
       }
-    }
   }
   return bun->action;
 }

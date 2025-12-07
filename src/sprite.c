@@ -107,50 +107,40 @@ void SetTiles(TGA *tga)
   }
 }
 
-void InitSprite(AnimatedSprite *sprite, u32 size, u32 baseTile, u32 numFrames, u32 speed)
+static void SetSpriteFlip(u32 obj, AnimatedSprite *sprite)
+{
+  if (sprite->frames[sprite->curFrame].dirX < 0) {
+    SetObjFlipH(obj, false);
+  } else if (sprite->frames[sprite->curFrame].dirX > 0) {
+    SetObjFlipH(obj, true);
+  }
+  if (sprite->frames[sprite->curFrame].dirY < 0) {
+    SetObjFlipV(obj, false);
+  } else if (sprite->frames[sprite->curFrame].dirY > 0) {
+    SetObjFlipV(obj, true);
+  }
+}
+
+void InitSprite(AnimatedSprite *sprite, u32 size, u32 speed, u32 numFrames, SpriteFrame *frames)
 {
   sprite->size = size;
-  sprite->baseTile = baseTile;
-  sprite->numFrames = numFrames;
   sprite->speed = speed;
+  sprite->numFrames = numFrames;
   sprite->next = 0;
-  sprite->frame = 0;
+  sprite->curFrame = 0;
+  sprite->frames = frames;
 }
 
 static AnimatedSprite *objSprites[128] = {0};
 
 void AssignSprite(u32 obj, AnimatedSprite *sprite)
 {
-  SetObjSize(obj, sprite->size);
-  SetObjSprite(obj, sprite->baseTile);
-  objSprites[obj] = sprite;
-  sprite->next = TickCount() + sprite->speed;
-}
-
-static u32 NumTiles(u32 size)
-{
-  switch (size) {
-  case Obj8x8:
-    return 1;
-  case Obj16x16:
-  case Obj32x8:
-  case Obj8x32:
-    return 4;
-  case Obj32x32:
-    return 16;
-  case Obj64x64:
-    return 64;
-  case Obj16x8:
-  case Obj8x16:
-    return 2;
-  case Obj32x16:
-  case Obj16x32:
-    return 8;
-  case Obj64x32:
-  case Obj32x64:
-    return 32;
-  default:
-    return 0;
+  if (objSprites[obj] != sprite) {
+    objSprites[obj] = sprite;
+    SetObjSize(obj, sprite->size);
+    SetObjSprite(obj, sprite->frames[sprite->curFrame].baseTile);
+    SetSpriteFlip(obj, sprite);
+    sprite->next = TickCount() + sprite->speed;
   }
 }
 
@@ -162,8 +152,9 @@ bool UpdateSprite(u32 obj)
 
   if (now > sprite->next) {
     sprite->next = now + sprite->speed;
-    sprite->frame = (sprite->frame+1) % sprite->numFrames;
-    SetObjSprite(obj, sprite->baseTile + NumTiles(sprite->size)*sprite->frame);
+    sprite->curFrame = (sprite->curFrame+1) % sprite->numFrames;
+    SetObjSprite(obj, sprite->frames[sprite->curFrame].baseTile);
+    SetSpriteFlip(obj, sprite);
     return true;
   }
 
