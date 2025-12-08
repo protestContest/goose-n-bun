@@ -1,5 +1,5 @@
 #include "character.h"
-#include "input.h"
+#include "kit.h"
 
 void PlaceCharacter(Character *ch, i16 x, i16 y)
 {

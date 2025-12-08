@@ -1,7 +1,7 @@
-#include "input.h"
-#include "hardware.h"
-#include "interrupt.h"
-#include "debug.h"
+#include "kit/input.h"
+#include "kit/hardware.h"
+#include "kit/interrupt.h"
+#include "kit/debug.h"
 
 static void Wake(void)
 {

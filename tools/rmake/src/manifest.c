@@ -1,5 +1,5 @@
 #include "manifest.h"
-#include "../../inc/res.h"
+#include "../../inc/kit/res.h"
 #include <string.h>
 #include <libgen.h>
 

@@ -1,6 +1,6 @@
 #pragma once
-#include "sprite.h"
-#include "canvas.h"
+#include "kit/sprite.h"
+#include "kit/canvas.h"
 
 struct Character;
 

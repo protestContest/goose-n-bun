@@ -1,6 +1,6 @@
-#include "str.h"
-#include "mem.h"
-#include "debug.h"
+#include "kit/str.h"
+#include "kit/mem.h"
+#include "kit/debug.h"
 
 u32 StrLen(char *s)
 {

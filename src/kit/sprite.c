@@ -1,7 +1,7 @@
-#include "sprite.h"
-#include "hardware.h"
-#include "canvas.h"
-#include "time.h"
+#include "kit/sprite.h"
+#include "kit/hardware.h"
+#include "kit/canvas.h"
+#include "kit/time.h"
 
 void SetPalette(u32 n, u8 *colors, u32 numColors, u32 depth)
 {

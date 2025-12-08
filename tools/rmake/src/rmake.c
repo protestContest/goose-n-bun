@@ -1,4 +1,4 @@
-#include "../../inc/res.h"
+#include "../../inc/kit/res.h"
 #include <libgen.h>
 #include <string.h>
 #include <stdlib.h>

@@ -1,7 +1,7 @@
-#include "text.h"
-#include "canvas.h"
-#include "res.h"
-#include "debug.h"
+#include "kit/text.h"
+#include "kit/canvas.h"
+#include "kit/res.h"
+#include "kit/debug.h"
 
 #define propFont  (i16)0x9000
 #define fixedFont (i16)0xB000

@@ -1,6 +1,5 @@
 #include "goose.h"
-#include "input.h"
-#include "debug.h"
+#include "kit.h"
 
 static SpriteFrame gooseIdleFrames[] = {
   {512,0,0},

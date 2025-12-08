@@ -1,4 +1,4 @@
-#include "math.h"
+#include "kit/math.h"
 
 // sine table: SIN(0..88.6 degrees) * 0x8000, entries 0..255
 // use symmetry for full circle: sin(90+x) = cos(x), sin(180+x) = -sin(x), etc.

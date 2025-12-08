@@ -1,8 +1,8 @@
-#include "res.h"
-#include "math.h"
-#include "str.h"
-#include "mem.h"
-#include "debug.h"
+#include "kit/res.h"
+#include "kit/math.h"
+#include "kit/str.h"
+#include "kit/mem.h"
+#include "kit/debug.h"
 
 extern const ResFile __Resources__;
 #define resFile (&__Resources__)

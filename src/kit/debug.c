@@ -1,9 +1,9 @@
-#include "debug.h"
-#include "canvas.h"
-#include "text.h"
-#include "mem.h"
-#include "str.h"
-#include "res.h"
+#include "kit/debug.h"
+#include "kit/canvas.h"
+#include "kit/text.h"
+#include "kit/mem.h"
+#include "kit/str.h"
+#include "kit/res.h"
 
 #define MGBA_LOG_FATAL 0
 #define MGBA_LOG_ERROR 1

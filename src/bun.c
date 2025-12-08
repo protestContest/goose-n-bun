@@ -1,7 +1,5 @@
 #include "bun.h"
-#include "math.h"
-#include "mem.h"
-#include "input.h"
+#include "kit.h"
 #include "goose.h"
 
 static SpriteFrame bunIdleFrames[] = {

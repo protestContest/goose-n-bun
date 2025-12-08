@@ -1,6 +1,4 @@
 #include "ui.h"
-#include "canvas.h"
-#include "text.h"
 
 void ShowWindow(Rect *bounds)
 {

@@ -1,16 +1,8 @@
-#include "interrupt.h"
-#include "time.h"
-#include "canvas.h"
-#include "res.h"
-#include "sprite.h"
-#include "input.h"
-#include "math.h"
+#include "kit.h"
+
 #include "goose.h"
 #include "bun.h"
 #include "ui.h"
-#include "text.h"
-#include "str.h"
-#include "mem.h"
 
 Character buns[126];
 Character goose;

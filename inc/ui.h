@@ -1,5 +1,5 @@
 #pragma once
-#include "canvas.h"
+#include "kit.h"
 
 void ShowWindow(Rect *bounds);
 void TextWindow(char *text, i16 x, i16 y);

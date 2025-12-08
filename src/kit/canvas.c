@@ -1,7 +1,7 @@
-#include "canvas.h"
-#include "mem.h"
-#include "hardware.h"
-#include "math.h"
+#include "kit/canvas.h"
+#include "kit/mem.h"
+#include "kit/hardware.h"
+#include "kit/math.h"
 
 static PenState pen = {{0,0}, {1,1}, 0};
 

@@ -1,7 +1,7 @@
-#include "time.h"
-#include "hardware.h"
-#include "interrupt.h"
-#include "mem.h"
+#include "kit/time.h"
+#include "kit/hardware.h"
+#include "kit/interrupt.h"
+#include "kit/mem.h"
 
 static u32 ticks = 0;
 

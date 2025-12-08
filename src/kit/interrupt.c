@@ -1,5 +1,5 @@
-#include "interrupt.h"
-#include "hardware.h"
+#include "kit/interrupt.h"
+#include "kit/hardware.h"
 
 static FnPtr handlers[14] = {0};
 

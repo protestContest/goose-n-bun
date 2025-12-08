@@ -1,0 +1,11 @@
+#pragma once
+#include "kit/canvas.h"
+#include "kit/debug.h"
+#include "kit/input.h"
+#include "kit/interrupt.h"
+#include "kit/math.h"
+#include "kit/mem.h"
+#include "kit/res.h"
+#include "kit/str.h"
+#include "kit/text.h"
+#include "kit/time.h"
